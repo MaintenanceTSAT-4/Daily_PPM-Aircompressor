@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>เข้าสู่ระบบ — Daily PPM Air Compressor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body class="login-bg">
+  <div class="login-card">
+    <div class="login-logo">🛠️</div>
+    <h1>Daily PPM</h1>
+    <p class="login-sub">ระบบตรวจเช็คประจำวัน — Air Compressor</p>
+
+    <form id="loginForm">
+      <label>รหัสพนักงาน</label>
+      <input type="text" id="empCode" required placeholder="เช่น 12345" autocomplete="off"
+             inputmode="numeric" autofocus style="text-align:center;font-size:20px;letter-spacing:2px" />
+      <button type="submit" class="btn btn-primary btn-block" id="loginBtn">เข้าสู่ระบบ</button>
+    </form>
+
+    <p class="login-switch">กรอกรหัสพนักงานเพื่อเริ่มตรวจเช็ค</p>
+    <div id="msg" class="login-msg"></div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script>
+    const msg = document.getElementById("msg");
+    const show = (t, ok = false) => { msg.textContent = t; msg.className = "login-msg " + (ok ? "ok" : "err"); };
+
+    // Already logged in? go to app
+    getSessionUser().then(u => { if (u) window.location.href = "app.html"; });
+
+    document.getElementById("loginForm").onsubmit = async (e) => {
+      e.preventDefault();
+      const code = document.getElementById("empCode").value.trim();
+      if (!code) return show("กรุณากรอกรหัสพนักงาน");
+      const btn = document.getElementById("loginBtn");
+      btn.disabled = true; btn.textContent = "กำลังเข้าสู่ระบบ...";
+
+      const { error } = await sb.auth.signInWithPassword({
+        email: codeEmail(code), password: codePassword(code)
+      });
+
+      btn.disabled = false; btn.textContent = "เข้าสู่ระบบ";
+      if (error) return show("ไม่พบรหัสพนักงานนี้ หรือยังไม่ได้ลงทะเบียน — ติดต่อผู้ดูแลระบบ (Admin)");
+      window.location.href = "app.html";
+    };
+  </script>
+</body>
+</html>
