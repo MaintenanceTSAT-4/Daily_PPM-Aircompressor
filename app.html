@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Daily PPM — Air Compressor</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛠️</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="side-brand">
+        <div class="logo">🛠️</div>
+        <div>
+          <div class="bt">DAILY PPM</div>
+          <div class="bs">Air Compressor</div>
+        </div>
+      </div>
+
+      <nav class="side-nav" id="nav">
+        <a data-view="check" class="active"><span class="ic">📝</span> บันทึกตรวจเช็ค</a>
+        <a data-view="dashboard"><span class="ic">📊</span> Dashboard</a>
+        <a data-view="approvals" id="navApprovals"><span class="ic">✅</span> <span>อนุมัติ</span><span class="nav-count hidden" id="navCount">0</span></a>
+        <a data-view="admin" id="navAdmin" class="hidden"><span class="ic">⚙️</span> Admin</a>
+      </nav>
+
+      <div class="side-foot">
+        <div class="side-user">
+          <div class="av" id="avatar">·</div>
+          <div>
+            <div class="nm" id="who">...</div>
+            <span class="badge-role" id="roleBadge"></span>
+          </div>
+        </div>
+        <div class="row2">
+          <button class="btn btn-sm" id="themeToggle" title="สลับธีม">🌙 ธีมมืด</button>
+          <button class="btn btn-sm btn-ghost" id="logout">ออกจากระบบ</button>
+        </div>
+      </div>
+    </aside>
+
+    <div class="content">
+      <header class="content-top">
+        <span class="ct-title">ระบบตรวจเช็คประจำวัน — Air Compressor PPM</span>
+        <span class="spacer"></span>
+        <span class="bell" id="bell" title="การแจ้งเตือน">🔔<span class="dot hidden" id="bellDot">0</span></span>
+      </header>
+
+      <main class="wrap">
+        <section id="view-check"></section>
+        <section id="view-dashboard" class="hidden"></section>
+        <section id="view-approvals" class="hidden"></section>
+        <section id="view-admin" class="hidden"></section>
+      </main>
+    </div>
+  </div>
+
+  <div id="modalRoot"></div>
+
+  <!-- Libraries (CDN) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <!-- App -->
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/signature.js"></script>
+  <script src="js/pdf.js"></script>
+  <script src="js/daily-check.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script src="js/admin.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
