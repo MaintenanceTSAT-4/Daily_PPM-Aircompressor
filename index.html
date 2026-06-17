@@ -140,6 +140,53 @@ textarea.input{resize:vertical;min-height:70px}
 .row-actions{display:flex;gap:10px;flex-wrap:wrap}
 .login-id-box{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:11px 14px;font-size:14px}
 .login-id-box .lid-role{display:inline-block;margin-left:8px;font-size:11px;padding:2px 8px;border-radius:8px;background:rgba(52,210,123,.16);color:var(--green);text-transform:capitalize}
+.floor{position:relative;width:100%;aspect-ratio:1532/688;max-height:82vh;border:1px solid var(--border);border-radius:14px;overflow:hidden;margin:4px auto;background:#fff center/100% 100% no-repeat}
+.fm.mini{width:80px;padding:6px 5px}
+.fm.mini .fm-name{font-size:10px;margin-top:2px}
+.fm.mini .fm-id{font-size:9px}
+.fm.mini svg,.fm.mini img{width:30px!important;height:30px!important}
+.hamb{display:none;background:var(--card);border:1px solid var(--border);width:42px;height:42px;border-radius:12px;font-size:18px;cursor:pointer;align-items:center;justify-content:center}
+@media(max-width:860px){
+  .hamb{display:inline-flex}
+  .page-title{font-size:19px} .content{padding:16px 13px} .topbar{padding:13px 14px;flex-direction:row;align-items:center}
+  .kpi .num{font-size:28px} .kpi-grid{gap:11px}
+  .fm{width:96px;padding:7px 5px} .fm .fm-name{font-size:11px} .fmd{width:130px;padding:9px}
+  .drawer{width:300px}
+}
+.floor-hint{position:absolute;left:12px;top:10px;font-size:11px;color:var(--muted2);background:var(--panel);padding:3px 8px;border-radius:8px;border:1px solid var(--border-soft);z-index:2}
+.fm{position:absolute;transform:translate(-50%,-50%);width:124px;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:10px 8px;text-align:center;cursor:pointer;transition:.15s}
+.fm:hover{border-color:var(--green);box-shadow:var(--shadow);transform:translate(-50%,-50%) scale(1.05)}
+.fm.off{opacity:.5;cursor:not-allowed}
+.fm.off:hover{border-color:var(--red);transform:translate(-50%,-50%)}
+.fm .fm-name{font-size:13px;font-weight:700;margin-top:4px;line-height:1.2}
+.fm .fm-id{font-size:10px;color:var(--muted);letter-spacing:.5px}
+.fm .fm-st{display:inline-block;margin-top:6px;font-size:10px;padding:2px 9px;border-radius:8px;font-weight:600}
+.fm .fm-st.on{background:rgba(52,210,123,.16);color:var(--green)}
+.fm .fm-st.off{background:rgba(255,93,93,.16);color:var(--red)}
+.fmd{position:absolute;transform:translate(-50%,-50%);width:160px;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px 12px 10px;cursor:pointer;transition:.15s}
+.fmd:hover{border-color:var(--green);box-shadow:var(--shadow);transform:translate(-50%,-50%) scale(1.04);z-index:3}
+.fmd.checked{background:rgba(52,210,123,.12);border-color:rgba(52,210,123,.45)}
+.fmd.todo{background:rgba(255,93,93,.12);border-color:rgba(255,93,93,.45)}
+.fmd.inactive{opacity:.6}
+.fmd .fmd-dot{position:absolute;top:10px;right:10px;width:14px;height:14px;border-radius:50%;border:2px solid var(--card)}
+.fmd .fmd-dot.on{background:var(--green);box-shadow:0 0 8px var(--green)}
+.fmd .fmd-dot.off{background:var(--muted2)}
+.fmd .fmd-name{font-size:13px;font-weight:700;padding-right:18px;line-height:1.2}
+.fmd .fmd-id{font-size:10px;color:var(--muted);letter-spacing:.5px;margin-bottom:4px}
+.fmd .fmd-row{display:flex;align-items:center;gap:6px;font-size:11px;margin-top:5px}
+.fmd .fmd-row .lbl{color:var(--muted);flex:1;white-space:nowrap}
+.fmd .fmd-row .val{font-weight:700}
+.fmd .pmv.warn{color:var(--amber)} .fmd .pmv.due{color:var(--red)} .fmd .pmv.okc{color:var(--green)}
+#loadingView{position:fixed;inset:0;z-index:200;display:none;flex-direction:column;align-items:center;justify-content:center;gap:18px;
+  background:radial-gradient(900px 500px at 50% 30%,rgba(31,174,99,.14),transparent 60%),var(--bg)}
+#loadingView img{width:124px;height:124px;object-fit:contain;border-radius:20px;box-shadow:var(--shadow);animation:ldpop .5s ease}
+@keyframes ldpop{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
+#loadingView .ld-title{font-size:21px;font-weight:800;letter-spacing:1px}
+#loadingView .ld-title .o{color:#ef6b2a} #loadingView .ld-title .g{color:#1ea34a} #loadingView .ld-title .b{color:#2f5fe0}
+#loadingView .ld-sub{font-size:12px;color:var(--muted);margin-top:-8px}
+#loadingView .ld-bar{width:210px;height:6px;border-radius:6px;background:var(--border);overflow:hidden}
+#loadingView .ld-bar>i{display:block;height:100%;width:40%;border-radius:6px;background:linear-gradient(90deg,#1ea34a,#ef6b2a);animation:ldslide 1.1s infinite}
+@keyframes ldslide{0%{margin-left:-42%}100%{margin-left:102%}}
 
 .check-item{display:flex;align-items:center;gap:14px;padding:13px 16px;border:1px solid var(--border);border-radius:12px;margin-bottom:10px;background:var(--card)}
 .check-item .ci-label{flex:1;font-size:14px;font-weight:500}
@@ -195,15 +242,17 @@ textarea.input{resize:vertical;min-height:70px}
 </style>
 </head>
 <body>
+  <div id="loadingView">
+    <img src="TSAT4.jpg" alt="TSAT-4">
+    <div class="ld-title">Maintenance <span class="o">TS</span><span class="g">AT</span>-<span class="b">4</span></div>
+    <div class="ld-sub">กำลังเข้าสู่ระบบ…</div>
+    <div class="ld-bar"><i></i></div>
+  </div>
+
   <div id="loginView" class="login-wrap">
     <div class="login-card">
-      <svg width="150" height="150" viewBox="0 0 150 150" xmlns="http://www.w3.org/2000/svg" style="margin-bottom:6px">
-        <polyline points="26,54 96,54 38,96 108,96" fill="none" stroke="#ef6b2a" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
-        <line x1="42" y1="32" x2="112" y2="32" stroke="#1ea34a" stroke-width="20" stroke-linecap="round"/>
-        <line x1="77" y1="32" x2="77" y2="104" stroke="#1ea34a" stroke-width="20" stroke-linecap="round"/>
-        <text x="75" y="141" text-anchor="middle" font-family="Prompt,Arial,sans-serif" font-weight="800" font-size="23" fill="#16258f">AUTOMOTIVE</text>
-      </svg>
-      <div class="login-title">THAI SUMMIT</div>
+      <img src="TSAT4.jpg" alt="TSAT-4" style="width:140px;height:140px;object-fit:contain;border-radius:16px;margin-bottom:8px">
+      <div class="login-title">TS AUTOMOTIVE</div>
       <div class="login-sub">Maintenance · Daily PPM Air Compressor</div>
       <label class="fld-label">รหัสพนักงาน (Employee ID)</label>
       <input id="empInput" class="input" inputmode="numeric" placeholder="เช่น 1001" autocomplete="off">
@@ -217,12 +266,8 @@ textarea.input{resize:vertical;min-height:70px}
   <div id="appShell" class="shell" style="display:none;">
     <aside class="sidebar">
       <div class="side-brand">
-        <svg width="42" height="34" viewBox="0 0 150 118" xmlns="http://www.w3.org/2000/svg">
-          <polyline points="26,42 96,42 38,94 108,94" fill="none" stroke="#ef6b2a" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
-          <line x1="42" y1="20" x2="112" y2="20" stroke="#1ea34a" stroke-width="22" stroke-linecap="round"/>
-          <line x1="77" y1="20" x2="77" y2="98" stroke="#1ea34a" stroke-width="22" stroke-linecap="round"/>
-        </svg>
-        <div><div class="bt">THAI SUMMIT</div><div class="bs">Maintenance · Daily PPM</div></div>
+        <img src="TSAT4.jpg" alt="TSAT-4" style="width:40px;height:40px;object-fit:contain;border-radius:8px">
+        <div><div class="bt">TSAT-4</div><div class="bs">Maintenance · Daily PPM</div></div>
       </div>
       <nav id="navMenu" class="nav"></nav>
       <div class="side-foot">
@@ -237,9 +282,12 @@ textarea.input{resize:vertical;min-height:70px}
 
     <main class="main">
       <header class="topbar">
-        <div>
-          <h1 id="pageTitle" class="page-title">Machine Overview</h1>
-          <div id="pageSub" class="page-sub"></div>
+        <div class="flex" style="gap:12px">
+          <button id="hambBtn" class="hamb">☰</button>
+          <div>
+            <h1 id="pageTitle" class="page-title">Machine Overview</h1>
+            <div id="pageSub" class="page-sub"></div>
+          </div>
         </div>
         <div class="top-actions">
           <div class="filter-pills" id="topFilters"></div>
@@ -263,6 +311,13 @@ textarea.input{resize:vertical;min-height:70px}
 
 <script>
 'use strict';
+/* ============================================================
+ * BACKEND_URL: วาง URL ของ Apps Script Web App (ลงท้าย /exec) ที่นี่
+ * เพื่อให้ทุกอุปกรณ์ดึง/บันทึกข้อมูลชุดเดียวกันจาก Google Sheet
+ * เว้นว่าง = โหมดเดโม่ (ข้อมูลจำลองในเครื่อง ไม่บันทึกจริง)
+ * ตัวอย่าง: var BACKEND_URL='https://script.google.com/macros/s/AKfycb..../exec';
+ * ============================================================ */
+var BACKEND_URL='';
 var S={user:null,machines:[],items:[],date:todayStr(),shift:'all',notifs:[],view:'dashboard'};
 function todayStr(){var d=new Date(),p=function(n){return (n<10?'0':'')+n;};return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());}
 function $(s,el){return (el||document).querySelector(s);}
@@ -283,7 +338,12 @@ function doLogin(){
     btn.disabled=false;btn.textContent='เข้าสู่ระบบ';
     if(!r.ok){err.textContent=r.error;return;}
     S.user=r.user;
-    return gs('apiBootstrap',id).then(function(b){S.machines=b.machines;S.items=b.items;S.notifs=b.notifications;S.date=b.today;startApp();});
+    return gs('apiBootstrap',id).then(function(b){
+      S.machines=b.machines;S.items=b.items;S.notifs=b.notifications;S.date=b.today;S.floorPlan=b.floorPlan||'floorplan.png';
+      $('#loginView').style.display='none';
+      var lv=$('#loadingView');lv.style.display='flex';
+      setTimeout(function(){lv.style.display='none';startApp();},1500);
+    });
   }).catch(function(e){btn.disabled=false;btn.textContent='เข้าสู่ระบบ';err.textContent='เกิดข้อผิดพลาด: '+e.message;});
 }
 $('#loginBtn').onclick=doLogin;
@@ -300,7 +360,7 @@ var NAV={
 function buildNav(){
   var nav=$('#navMenu');nav.innerHTML='';var groups={};
   Object.keys(NAV).forEach(function(k){if(NAV[k].roles.indexOf(S.user.role)===-1)return;var g=NAV[k].group;(groups[g]=groups[g]||[]).push(k);});
-  Object.keys(groups).forEach(function(g){nav.appendChild(el('<div class="nav-group">'+g+'</div>'));groups[g].forEach(function(k){var item=el('<div class="nav-item" data-view="'+k+'"><span class="ic">'+NAV[k].ic+'</span>'+NAV[k].label+'</div>');item.onclick=function(){go(k);};nav.appendChild(item);});});
+  Object.keys(groups).forEach(function(g){nav.appendChild(el('<div class="nav-group">'+g+'</div>'));groups[g].forEach(function(k){var item=el('<div class="nav-item" data-view="'+k+'"><span class="ic">'+NAV[k].ic+'</span>'+NAV[k].label+'</div>');item.onclick=function(){if(k==='dailycheck')dcMachineId=null;go(k);};nav.appendChild(item);});});
 }
 function go(view){
   S.view=view;$all('.nav-item').forEach(function(n){n.classList.toggle('active',n.dataset.view===view);});
@@ -330,9 +390,16 @@ function viewDashboard(){
       kpiCard('','อนุมัติแล้ว',d.approved,'รายการ','Approved')+
       kpiCard('r','พบผิดปกติ (NG)',d.ng,'รายการ',d.ng>0?'⚠ ต้องตรวจสอบ':'ปกติทั้งหมด')+
       kpiCard('p','PM ใหญ่ถึงกำหนด',d.pmDue,'เครื่อง',d.pmDue>0?'⚠ ต้องวางแผนซ่อม':'ยังไม่ถึงกำหนด');
-    var cards=st.map(machineCard).join('');
-    $('#content').innerHTML='<div class="kpi-grid">'+kpis+'</div><div class="section-title">สถานะเครื่องจักร · '+esc(S.date)+'</div><div class="mc-grid">'+(cards||'<div class="empty">ไม่มีเครื่องจักร</div>')+'</div>';
-    $all('.mc').forEach(function(c){c.onclick=function(){var rid=c.dataset.rid;if(rid)openRecordModal(rid);else if(NAV.dailycheck.roles.indexOf(S.user.role)>-1){go('dailycheck');}else toast('ยังไม่มีการตรวจสำหรับเครื่องนี้');};});
+    var cards=st.map(dashMachine).join('');
+    $('#content').innerHTML='<div class="kpi-grid">'+kpis+'</div><div class="section-title">สถานะเครื่องจักร (ตามผังโรงงาน) · '+esc(S.date)+'</div>'+
+      '<div class="floor" style="'+floorBg()+'"><div class="floor-hint">🟢 เปิดใช้งาน · ⚪ ปิด &nbsp;|&nbsp; พื้นแดง = ยังไม่ตรวจ · พื้นเขียว = ตรวจแล้ว</div>'+(cards||'<div class="empty">ไม่มีเครื่องจักร</div>')+'</div>';
+    $all('.fmd').forEach(function(c){c.onclick=function(){
+      var rid=c.dataset.rid;
+      if(rid){openRecordModal(rid);return;}
+      if(c.dataset.active!=='1'){toast('เครื่องนี้ปิดใช้งาน','err');return;}
+      if(NAV.dailycheck.roles.indexOf(S.user.role)>-1){dcMachineId=c.dataset.mid;go('dailycheck');}
+      else toast('ยังไม่มีการตรวจสำหรับเครื่องนี้');
+    };});
   }).catch(showErr);
 }
 function kpiCard(cls,label,num,unit,foot){return '<div class="kpi '+cls+'"><div class="label">'+esc(label)+'</div><div class="num">'+num+' <small>'+esc(unit)+'</small></div><div class="foot">'+esc(foot)+'</div></div>';}
@@ -347,6 +414,26 @@ function pmBlock(m){
   else{cls='';label='PM ใหญ่รอบหน้าอีก';val=rem+' ชม.';}
   return '<div class="mc-pm '+cls+'"><span class="mh-ic">🛠</span><span class="mh-label">'+label+'</span><span class="mh-val">'+val+'</span></div>';
 }
+function dashMachine(m){
+  var active=m.active!==false;
+  var checked=active && m.status && m.status!=='None';
+  var cls=active?(checked?'checked':'todo'):'inactive';
+  var rh=(m.runHour!==''&&m.runHour!=null)?esc(m.runHour)+' hr':'-';
+  var pmTxt='ยังไม่ตั้ง',pmCls='';
+  if(m.pmInterval&&m.pmInterval>0){
+    if(m.pmRemaining==null){pmTxt='รอข้อมูล';}
+    else if(m.pmRemaining<=0){pmCls='due';pmTxt='เกิน '+Math.abs(m.pmRemaining)+' ชม.';}
+    else if(m.pmRemaining<=m.pmInterval*0.1){pmCls='warn';pmTxt=m.pmRemaining+' ชม.';}
+    else {pmCls='okc';pmTxt=m.pmRemaining+' ชม.';}
+  }
+  var x=(m.layoutX!=null&&m.layoutX!=='')?m.layoutX:50, y=(m.layoutY!=null&&m.layoutY!=='')?m.layoutY:50;
+  return '<div class="fmd '+cls+'" data-rid="'+esc(m.recordId||'')+'" data-mid="'+esc(m.machineId)+'" data-active="'+(active?1:0)+'" style="left:'+x+'%;top:'+y+'%">'+
+    '<span class="fmd-dot '+(active?'on':'off')+'"></span>'+
+    '<div class="fmd-name">'+esc(m.machineName)+'</div><div class="fmd-id">'+esc(m.machineId)+'</div>'+
+    '<div class="fmd-row"><span class="lbl">⏱ ชม.ทำงาน</span><span class="val">'+rh+'</span></div>'+
+    '<div class="fmd-row"><span class="lbl">🛠 PM อีก</span><span class="val pmv '+pmCls+'">'+pmTxt+'</span></div>'+
+  '</div>';
+}
 function machineCard(m){
   var dotClass='none',txt='ยังไม่ตรวจ';
   if(m.status==='Approved'){dotClass='ok';txt='✓ อนุมัติแล้ว';}
@@ -355,21 +442,47 @@ function machineCard(m){
   if(m.overall==='NG'&&m.status==='Approved'){dotClass='ng';}
   var pct=(m.status==='Approved')?100:(m.status==='Submitted'?60:0);
   var rh=(m.runHour!==''&&m.runHour!=null)?esc(m.runHour)+' hr':'-';
-  return '<div class="mc" data-rid="'+esc(m.recordId)+'"><div class="mc-top"><div><div class="mc-name">'+esc(m.machineName)+'</div><div class="mc-loc">'+esc(m.machineId)+(m.location?' · '+esc(m.location):'')+'</div></div><span class="dot '+dotClass+'"></span></div><div class="mc-status">'+txt+'</div><div class="mc-hour"><span class="mh-ic">⏱</span><span class="mh-label">ชั่วโมงการทำงาน</span><span class="mh-val">'+rh+'</span></div>'+pmBlock(m)+'<div class="pbar"><i style="width:'+pct+'%;background:'+(dotClass==='ng'?'var(--red)':dotClass==='pend'?'var(--amber)':'var(--green)')+'"></i></div></div>';
+  return '<div class="mc" data-rid="'+esc(m.recordId)+'" data-mid="'+esc(m.machineId)+'"><div class="mc-top"><div><div class="mc-name">'+esc(m.machineName)+'</div><div class="mc-loc">'+esc(m.machineId)+(m.location?' · '+esc(m.location):'')+'</div></div><span class="dot '+dotClass+'"></span></div><div class="mc-status">'+txt+'</div><div class="mc-hour"><span class="mh-ic">⏱</span><span class="mh-label">ชั่วโมงการทำงาน</span><span class="mh-val">'+rh+'</span></div>'+pmBlock(m)+'<div class="pbar"><i style="width:'+pct+'%;background:'+(dotClass==='ng'?'var(--red)':dotClass==='pend'?'var(--amber)':'var(--green)')+'"></i></div></div>';
 }
 
-function viewDailyCheck(){
-  setPage('Daily Check','บันทึกการตรวจประจำวัน');clearTopFilters();
-  var machineOpts=S.machines.map(function(m){return '<option value="'+esc(m.id)+'">'+esc(m.name)+' ('+esc(m.id)+')</option>';}).join('');
-  var html='<div class="panel"><div class="panel-head"><h3>ฟอร์มตรวจเช็คเครื่องอัดอากาศ</h3></div><div class="modal-body">'+
-    '<div class="form-grid"><div class="field"><label>เครื่องจักร</label><select id="dcMachine" class="select" style="width:100%">'+machineOpts+'</select></div>'+
-    '<div class="field"><label>วันที่</label><input id="dcDate" type="date" class="input" value="'+S.date+'"></div></div>'+
+var dcMachineId=null;
+function viewDailyCheck(){ if(dcMachineId){renderDailyForm();}else{renderFactoryLayout();} }
+function machineIcon(){return '<svg width="44" height="44" viewBox="0 0 64 64" fill="none" stroke="var(--green)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="19" width="34" height="20" rx="10"/><circle cx="47" cy="24" r="9"/><path d="M14 39l-2 12M36 39l2 12M9 51h32"/><path d="M47 15V8"/></svg>';}
+function floorBg(){return S.floorPlan?'background:#fff url("'+String(S.floorPlan).replace(/"/g,'')+'") center/100% 100% no-repeat':'';}
+var _dragEl=null,_dragFloor=null;
+function _layMove(e){if(!_dragEl)return;var r=_dragFloor.getBoundingClientRect();var p=e.touches?e.touches[0]:e;var x=Math.max(0,Math.min(100,(p.clientX-r.left)/r.width*100));var y=Math.max(0,Math.min(100,(p.clientY-r.top)/r.height*100));_dragEl.style.left=x+'%';_dragEl.style.top=y+'%';_dragEl._x=x;_dragEl._y=y;e.preventDefault();}
+function _layUp(){if(!_dragEl)return;var elx=_dragEl;_dragEl=null;elx.style.zIndex='';gs('apiSaveLayout',S.user.employeeId,elx.dataset.id,Math.round(elx._x),Math.round(elx._y)).then(function(){toast('บันทึกตำแหน่ง '+elx.dataset.id,'ok');}).catch(showErr);}
+document.addEventListener('mousemove',_layMove);document.addEventListener('mouseup',_layUp);
+document.addEventListener('touchmove',_layMove,{passive:false});document.addEventListener('touchend',_layUp);
+function renderFactoryLayout(){
+  setPage('Daily Check','แตะเครื่องจักรจากผังโรงงานเพื่อเริ่มตรวจ');clearTopFilters();loading();
+  gs('apiMachineLayout',S.user.employeeId).then(function(ms){
+    var markers=ms.map(function(m){
+      var x=(m.layoutX!=null&&m.layoutX!=='')?m.layoutX:50, y=(m.layoutY!=null&&m.layoutY!=='')?m.layoutY:50;
+      var img=m.image?'<img src="'+esc(m.image)+'" style="width:44px;height:44px;object-fit:contain">':machineIcon();
+      return '<div class="fm'+(m.active?'':' off')+'" data-id="'+esc(m.id)+'" data-active="'+(m.active?1:0)+'" style="left:'+x+'%;top:'+y+'%">'+
+        img+'<div class="fm-name">'+esc(m.name)+'</div><div class="fm-id">'+esc(m.id)+'</div>'+
+        '<div class="fm-st '+(m.active?'on':'off')+'">'+(m.active?'เปิดใช้งาน':'ปิดใช้งาน')+'</div></div>';
+    }).join('');
+    $('#content').innerHTML='<div class="panel"><div class="panel-head"><h3>ผังโรงงาน (Factory Layout)</h3><span class="muted" style="font-size:12px">แตะเครื่องเพื่อเริ่ม Daily Check</span></div>'+
+      '<div class="floor" style="'+floorBg()+'"><div class="floor-hint">📍 ตำแหน่งตาม Layout · ปรับได้ในเมนู Admin</div>'+(markers||'<div class="empty">ยังไม่มีเครื่องจักร</div>')+'</div></div>';
+    $all('.fm').forEach(function(c){c.onclick=function(){ if(c.dataset.active!=='1'){toast('เครื่องนี้ปิดใช้งาน ตรวจไม่ได้','err');return;} dcMachineId=c.dataset.id; renderDailyForm(); };});
+  }).catch(showErr);
+}
+function renderDailyForm(){
+  var m=S.machines.find(function(x){return x.id===dcMachineId;})||{id:dcMachineId,name:dcMachineId};
+  setPage('Daily Check','บันทึกการตรวจ: '+m.name);clearTopFilters();
+  var html='<div class="panel"><div class="panel-head"><h3>ฟอร์มตรวจเช็ค · '+esc(m.name)+' ('+esc(m.id)+')</h3>'+
+    '<button class="btn btn-ghost btn-sm" id="dcBack">← เลือกเครื่องอื่น</button></div><div class="modal-body">'+
+    '<div class="field"><label>วันที่</label><input id="dcDate" type="date" class="input" value="'+S.date+'" style="max-width:220px"></div>'+
     '<div class="section-title mt">หัวข้อตรวจ ('+S.items.length+' รายการ)</div><div id="dcItems"></div>'+
     '<div class="field mt"><label>ผู้ตรวจ (อ้างอิงจากผู้เข้าสู่ระบบ)</label><div class="login-id-box">'+esc(S.user.name)+' · รหัส '+esc(S.user.employeeId)+'<span class="lid-role">'+esc(S.user.role)+'</span></div></div>'+
-    '<div class="row-actions mt"><button class="btn btn-primary" id="dcSubmit">ส่งบันทึก & ขออนุมัติ</button><button class="btn btn-ghost" id="dcReset">ล้างฟอร์ม</button></div></div></div>';
+    '<div class="row-actions mt"><button class="btn btn-primary" id="dcSubmit">ส่งบันทึก & ขออนุมัติ</button><button class="btn btn-ghost" id="dcReset">ล้างค่า</button></div></div></div>';
   $('#content').innerHTML=html;
   renderCheckItems($('#dcItems'),null);
-  $('#dcReset').onclick=viewDailyCheck;$('#dcSubmit').onclick=submitDailyCheck;
+  $('#dcBack').onclick=function(){dcMachineId=null;renderFactoryLayout();};
+  $('#dcReset').onclick=renderDailyForm;
+  $('#dcSubmit').onclick=submitDailyCheck;
 }
 function renderCheckItems(host,existing){
   host.innerHTML='';var exMap={};if(existing){existing.forEach(function(d){exMap[d.itemId]=d.value;});}
@@ -412,11 +525,11 @@ function evalClient(it,value){
 function updateRes(row,it){var r=evalClient(it,readRowValue(row,it));var pill=$('.res-pill',row);pill.className='res-pill '+r;pill.textContent=r==='pass'?'OK':r==='fail'?'NG':'-';}
 function collectValues(host){return S.items.map(function(it){var row=$('.check-item[data-id="'+it.id+'"]',host);return {itemId:it.id,label:it.label,value:readRowValue(row,it)};});}
 function submitDailyCheck(){
-  var payload={machineId:$('#dcMachine').value,date:$('#dcDate').value,shift:'',values:collectValues($('#dcItems')),signature:''};
+  var payload={machineId:dcMachineId,date:$('#dcDate').value,shift:'',values:collectValues($('#dcItems')),signature:''};
   var btn=$('#dcSubmit');btn.disabled=true;btn.textContent='กำลังส่ง...';
   gs('apiSubmitCheck',S.user.employeeId,payload).then(function(r){
     btn.disabled=false;btn.textContent='ส่งบันทึก & ขออนุมัติ';
-    toast('ส่งบันทึกเรียบร้อย · ผลรวม '+r.overall,r.overall==='NG'?'err':'ok');refreshNotifs();go('dashboard');
+    toast('ส่งบันทึกเรียบร้อย · ผลรวม '+r.overall,r.overall==='NG'?'err':'ok');dcMachineId=null;refreshNotifs();go('dashboard');
   }).catch(function(e){btn.disabled=false;btn.textContent='ส่งบันทึก & ขออนุมัติ';showErr(e);});
 }
 
@@ -524,11 +637,32 @@ function exportPdf(recordId){
 
 function viewAdmin(){
   setPage('Admin · ตั้งค่าระบบ','จัดการเครื่องจักร · หัวข้อตรวจ · ผู้ใช้');clearTopFilters();
-  $('#content').innerHTML='<div class="seg mb" id="adminTabs"><button data-t="machines" class="on">เครื่องจักร</button><button data-t="items">หัวข้อตรวจ</button><button data-t="users">ผู้ใช้ & สิทธิ์</button></div><div id="adminBody"></div>';
+  $('#content').innerHTML='<div class="seg mb" id="adminTabs"><button data-t="machines" class="on">เครื่องจักร</button><button data-t="items">หัวข้อตรวจ</button><button data-t="users">ผู้ใช้ & สิทธิ์</button><button data-t="layout">ผังโรงงาน</button></div><div id="adminBody"></div>';
   $('#adminTabs').addEventListener('click',function(e){if(e.target.tagName!=='BUTTON')return;$all('button',e.currentTarget).forEach(function(b){b.classList.remove('on');});e.target.classList.add('on');adminTab(e.target.dataset.t);});
   adminTab('machines');
 }
-function adminTab(t){if(t==='machines')adminMachines();else if(t==='items')adminItems();else adminUsers();}
+function adminTab(t){if(t==='machines')adminMachines();else if(t==='items')adminItems();else if(t==='layout')adminLayoutEditor();else adminUsers();}
+function adminLayoutEditor(){
+  $('#adminBody').innerHTML='<div class="spinner"></div>';
+  gs('apiMachineLayout',S.user.employeeId).then(function(ms){
+    var markers=ms.map(function(m){
+      var x=(m.layoutX!=null&&m.layoutX!=='')?m.layoutX:50,y=(m.layoutY!=null&&m.layoutY!=='')?m.layoutY:50;
+      var img=m.image?'<img src="'+esc(m.image)+'" style="width:40px;height:40px;object-fit:contain">':machineIcon();
+      return '<div class="fm mini'+(m.active?'':' off')+'" data-id="'+esc(m.id)+'" style="left:'+x+'%;top:'+y+'%;cursor:move">'+
+        img+'<div class="fm-name">'+esc(m.name)+'</div><div class="fm-id">'+esc(m.id)+'</div></div>';
+    }).join('');
+    $('#adminBody').innerHTML='<div class="panel"><div class="panel-head"><h3>จัดตำแหน่งเครื่องจักร — ลากเพื่อย้าย (บันทึกอัตโนมัติ)</h3>'+
+      '<div class="flex wrap"><input id="fpUrl" class="input" style="width:240px" placeholder="URL รูปแปลนโรงงาน" value="'+esc(S.floorPlan||'')+'"><button class="btn btn-ghost btn-sm" id="fpSave">ตั้งรูปแปลน</button></div></div>'+
+      '<div class="floor" id="layFloor" style="'+floorBg()+'">'+markers+'</div>'+
+      '<p class="muted" style="font-size:12px;margin-top:8px">ลากการ์ดเครื่องไปวางตามตำแหน่งจริงบนแปลน · ระบบบันทึกพิกัดอัตโนมัติเมื่อปล่อยเมาส์</p></div>';
+    var floor=$('#layFloor');
+    $all('.fm',floor).forEach(function(c){
+      var start=function(e){_dragEl=c;_dragFloor=floor;c.style.zIndex=5;e.preventDefault();};
+      c.addEventListener('mousedown',start);c.addEventListener('touchstart',start,{passive:false});
+    });
+    $('#fpSave').onclick=function(){var v=$('#fpUrl').value.trim();gs('apiSetFloorPlan',S.user.employeeId,v).then(function(){S.floorPlan=v;toast('บันทึกรูปแปลนแล้ว','ok');adminLayoutEditor();}).catch(showErr);};
+  }).catch(showErr);
+}
 function adminMachines(){
   $('#adminBody').innerHTML='<div class="spinner"></div>';
   gs('apiListMachines',S.user.employeeId).then(function(rows){
@@ -545,11 +679,15 @@ function machineModal(m){
     '<div class="section-title" style="margin:4px 0 10px">ตั้งค่า PM ใหญ่ (Major PM)</div>'+
     '<div class="form-grid"><div class="field"><label>ชม.ที่ทำ PM ใหญ่ล่าสุด / เริ่มต้น</label><input id="mPmLast" type="number" step="any" class="input" value="'+(m.pmLastHour!=null&&m.pmLastHour!==''?esc(m.pmLastHour):'')+'"></div>'+
     '<div class="field"><label>รอบ PM ใหญ่ ทุก ๆ (ชม.)</label><input id="mPmInt" type="number" step="any" class="input" value="'+(m.pmInterval!=null&&m.pmInterval!==''?esc(m.pmInterval):'')+'"></div></div>'+
+    '<div class="section-title" style="margin:4px 0 10px">ตำแหน่งในผังโรงงาน (Layout)</div>'+
+    '<div class="form-grid"><div class="field"><label>ตำแหน่งแนวนอน X (0–100%)</label><input id="mLx" type="number" step="any" min="0" max="100" class="input" value="'+(m.layoutX!=null&&m.layoutX!==''?esc(m.layoutX):'')+'"></div>'+
+    '<div class="field"><label>ตำแหน่งแนวตั้ง Y (0–100%)</label><input id="mLy" type="number" step="any" min="0" max="100" class="input" value="'+(m.layoutY!=null&&m.layoutY!==''?esc(m.layoutY):'')+'"></div></div>'+
+    '<div class="field"><label>รูปเครื่องจักร (URL — เว้นว่างใช้ไอคอนเริ่มต้น)</label><input id="mImg" class="input" value="'+esc(m.image||'')+'" placeholder="https://..."></div>'+
     (m.id?'<div class="field"><label>สถานะ</label><div class="seg" id="mActive"><button data-v="1" class="'+(m.active!==false?'on':'')+'">เปิด</button><button data-v="0" class="'+(m.active===false?'on':'')+'">ปิด</button></div></div>':'');
   showModal(m.id?'แก้ไขเครื่องจักร':'เพิ่มเครื่องจักร',body,modalSaveFoot());
   bindSeg('#mActive');$('#mCancel').onclick=closeModal;
   $('#mSave').onclick=function(){
-    var obj={id:m.id||'',code:$('#mCode')?$('#mCode').value:'',name:$('#mName').value,location:$('#mLoc').value,active:true,pmLastHour:$('#mPmLast').value===''?'':Number($('#mPmLast').value),pmInterval:$('#mPmInt').value===''?'':Number($('#mPmInt').value)};
+    var obj={id:m.id||'',code:$('#mCode')?$('#mCode').value:'',name:$('#mName').value,location:$('#mLoc').value,active:true,pmLastHour:$('#mPmLast').value===''?'':Number($('#mPmLast').value),pmInterval:$('#mPmInt').value===''?'':Number($('#mPmInt').value),layoutX:$('#mLx').value===''?'':Number($('#mLx').value),layoutY:$('#mLy').value===''?'':Number($('#mLy').value),image:$('#mImg').value.trim()};
     if(!obj.name){toast('กรุณากรอกชื่อ','err');return;}
     if(m.id) obj.active=segVal('#mActive','1');
     gs('apiSaveMachine',S.user.employeeId,obj).then(function(){toast('บันทึกแล้ว','ok');closeModal();refreshMachines(adminMachines);}).catch(showErr);
@@ -629,6 +767,9 @@ $('#bellBtn').onclick=openNotif;$('#closeNotif').onclick=closeNotif;$('#overlay'
 $('#markAllBtn').onclick=function(){gs('apiMarkAllRead',S.user.employeeId).then(refreshNotifs);};
 $('#themeBtn').onclick=toggleTheme;
 $('#logoutBtn').onclick=function(){S.user=null;$('#appShell').style.display='none';$('#loginView').style.display='flex';$('#empInput').value='';};
+$('#hambBtn').onclick=function(){$('.sidebar').classList.toggle('open');};
+function applyDevice(){document.body.classList.toggle('is-mobile',window.matchMedia('(max-width:860px)').matches);}
+window.addEventListener('resize',applyDevice);applyDevice();
 
 function showModal(title,bodyHtml,footHtml){
   $('#modalHost').innerHTML='<div class="modal-bg" id="modalBg"><div class="modal"><div class="modal-head"><h3>'+title+'</h3><button class="x-btn" id="modalX">✕</button></div><div class="modal-body">'+bodyHtml+'</div><div class="modal-foot">'+(footHtml||'')+'</div></div></div>';
@@ -659,9 +800,10 @@ var MOCK=(function(){
     {employeeId:'3001',name:'Manager View',role:'viewer',active:true}
   ];
   var machines=[
-    {id:'AC-01',name:'Air Compressor #1',location:'Utility Room A',active:true,pmLastHour:6500,pmInterval:8000},
-    {id:'AC-02',name:'Air Compressor #2',location:'Utility Room A',active:true,pmLastHour:4000,pmInterval:5800},
-    {id:'AC-03',name:'Air Compressor #3',location:'Utility Room B',active:true,pmLastHour:20000,pmInterval:5000}
+    {id:'AC-01',name:'Air Compressor #1',location:'Utility Room A',active:true,pmLastHour:6500,pmInterval:8000,layoutX:24,layoutY:38,image:''},
+    {id:'AC-02',name:'Air Compressor #2',location:'Utility Room A',active:true,pmLastHour:4000,pmInterval:5800,layoutX:58,layoutY:30,image:''},
+    {id:'AC-03',name:'Air Compressor #3',location:'Utility Room B',active:true,pmLastHour:20000,pmInterval:5000,layoutX:44,layoutY:72,image:''},
+    {id:'AC-04',name:'Air Compressor #4',location:'Utility Room B',active:false,pmLastHour:'',pmInterval:'',layoutX:80,layoutY:66,image:''}
   ];
   var items=[
     {id:'I1',label:'Pressure Load',type:'status',unit:'bar',min:6,max:8,order:1,active:true},
@@ -676,6 +818,7 @@ var MOCK=(function(){
     {id:'I10',label:'ชั่วโมงการทำงาน (Running Hour)',type:'number',unit:'hr',min:null,max:null,order:10,active:true}
   ];
   var records=[],notifs=[],audit=[];
+  var floorPlan='floorplan.png';
   function evalItem(it,value){
     if(it.type==='number'){if(value===''||value==null||isNaN(Number(value)))return 'na';var v=Number(value);if(it.min!=null&&v<it.min)return 'fail';if(it.max!=null&&v>it.max)return 'fail';return 'pass';}
     if(it.type==='text')return 'na';
@@ -725,16 +868,18 @@ var MOCK=(function(){
   function listSub(r){return {recordId:r.recordId,date:r.date,shift:r.shift,machineId:r.machineId,machineName:r.machineName,operatorName:r.operatorName,status:r.status,overall:r.overall,engineerName:r.engineerName,reviewedAt:r.reviewedAt};}
   return {
     apiLogin:function(id){var u=findUser(id);if(!u)return {ok:false,error:'ไม่พบรหัสพนักงานนี้ในระบบ'};if(!u.active)return {ok:false,error:'บัญชีนี้ถูกปิดการใช้งาน'};audit_(u,'LOGIN','','เข้าสู่ระบบ');return {ok:true,user:{employeeId:u.employeeId,name:u.name,role:u.role}};},
-    apiBootstrap:function(id){var u=findUser(id);checkPmDue();return {user:{employeeId:u.employeeId,name:u.name,role:u.role},machines:activeMachines(),items:activeItems(),notifications:notifsFor(u),today:today()};},
+    apiBootstrap:function(id){var u=findUser(id);checkPmDue();return {user:{employeeId:u.employeeId,name:u.name,role:u.role},machines:activeMachines(),items:activeItems(),notifications:notifsFor(u),today:today(),floorPlan:floorPlan};},
+    apiSaveLayout:function(id,mid,x,y){findUser(id);var m=machines.find(function(z){return z.id===mid;});if(m){m.layoutX=x;m.layoutY=y;}return {ok:true};},
+    apiSetFloorPlan:function(id,url){findUser(id);floorPlan=url||'';return {ok:true};},
     apiDashboard:function(id,date,shift){checkPmDue();var ms=activeMachines();var recs=records.filter(function(r){return r.date===date;});var checked=new Set(recs.map(function(r){return r.machineId;})).size;
       var pmDue=machines.filter(function(m){return m.active;}).filter(function(m){var lr=latestRec(m.id,date);var rh=runHourFromRec(lr);var pm=pmCalc(m,rh);return pm.pmRemaining!=null&&pm.pmRemaining<=0;}).length;
       return {totalMachines:ms.length,checkedMachines:checked,submitted:recs.length,approved:recs.filter(function(r){return r.status==='Approved';}).length,pending:recs.filter(function(r){return r.status==='Submitted';}).length,ng:recs.filter(function(r){return r.overall==='NG';}).length,completionPct:ms.length?Math.round(checked/ms.length*100):0,pmDue:pmDue};},
     apiTodayStatus:function(id,date,shift){
-      return machines.filter(function(m){return m.active;}).map(function(m){
+      return machines.map(function(m){
         var rec=records.filter(function(r){return r.machineId===m.id&&r.date===date;})[0];
         var rh=runHourFromRec(rec); if(rh===''||rh==null){rh=runHourFromRec(latestRec(m.id,date));}
         var pm=pmCalc(m,rh);
-        return {machineId:m.id,machineName:m.name,location:m.location,status:rec?rec.status:'None',overall:rec?rec.overall:'',recordId:rec?rec.recordId:'',runHour:rh,pmInterval:pm.pmInterval,pmLastHour:pm.pmLastHour,pmRemaining:pm.pmRemaining};
+        return {machineId:m.id,machineName:m.name,location:m.location,active:m.active,layoutX:m.layoutX,layoutY:m.layoutY,status:rec?rec.status:'None',overall:rec?rec.overall:'',recordId:rec?rec.recordId:'',runHour:rh,pmInterval:pm.pmInterval,pmLastHour:pm.pmLastHour,pmRemaining:pm.pmRemaining};
       });},
     apiListRecords:function(id,f){f=f||{};var u=findUser(id);var rows=records.slice();if(f.date)rows=rows.filter(function(r){return r.date===f.date;});if(f.machineId)rows=rows.filter(function(r){return r.machineId===f.machineId;});if(f.status)rows=rows.filter(function(r){return r.status===f.status;});if(u.role==='operator')rows=rows.filter(function(r){return r.operatorId===u.employeeId;});rows.sort(function(a,b){return a.date<b.date?1:a.date>b.date?-1:0;});return rows.map(listSub);},
     apiGetRecord:function(id,rid){var r=records.find(function(x){return x.recordId===rid;});return r?JSON.parse(JSON.stringify(r)):null;},
@@ -745,8 +890,9 @@ var MOCK=(function(){
     apiGetNotifications:function(id){checkPmDue();return notifsFor(findUser(id));},
     apiMarkNotifRead:function(id,nid){var n=notifs.find(function(x){return x.id===nid;});if(n)n.read=true;return {ok:true};},
     apiMarkAllRead:function(id){var u=findUser(id);var t=[u.employeeId];if(u.role==='engineer'||u.role==='admin')t.push('engineer');if(u.role==='admin')t.push('admin');notifs.forEach(function(n){if(t.indexOf(String(n.target))!==-1)n.read=true;});return {ok:true};},
-    apiListMachines:function(){return machines.map(function(m){return {id:m.id,name:m.name,location:m.location,active:m.active,pmLastHour:m.pmLastHour,pmInterval:m.pmInterval};});},
-    apiSaveMachine:function(id,m){var u=findUser(id);if(m.id){var x=machines.find(function(y){return y.id===m.id;});Object.assign(x,{name:m.name,location:m.location,active:m.active!==false,pmLastHour:m.pmLastHour,pmInterval:m.pmInterval});audit_(u,'MACHINE_EDIT','',m.name);}else{machines.push({id:(m.code&&m.code.trim())?m.code.trim():uid('MC'),name:m.name,location:m.location,active:true,pmLastHour:m.pmLastHour,pmInterval:m.pmInterval});audit_(u,'MACHINE_ADD','',m.name);}return {ok:true};},
+    apiMachineLayout:function(id){findUser(id);return machines.map(function(m){return {id:m.id,name:m.name,active:m.active,layoutX:m.layoutX,layoutY:m.layoutY,image:m.image||''};});},
+    apiListMachines:function(){return machines.map(function(m){return {id:m.id,name:m.name,location:m.location,active:m.active,pmLastHour:m.pmLastHour,pmInterval:m.pmInterval,layoutX:m.layoutX,layoutY:m.layoutY,image:m.image||''};});},
+    apiSaveMachine:function(id,m){var u=findUser(id);if(m.id){var x=machines.find(function(y){return y.id===m.id;});Object.assign(x,{name:m.name,location:m.location,active:m.active!==false,pmLastHour:m.pmLastHour,pmInterval:m.pmInterval,layoutX:m.layoutX,layoutY:m.layoutY,image:m.image});audit_(u,'MACHINE_EDIT','',m.name);}else{machines.push({id:(m.code&&m.code.trim())?m.code.trim():uid('MC'),name:m.name,location:m.location,active:true,pmLastHour:m.pmLastHour,pmInterval:m.pmInterval,layoutX:m.layoutX,layoutY:m.layoutY,image:m.image});audit_(u,'MACHINE_ADD','',m.name);}return {ok:true};},
     apiDeleteMachine:function(id,mid){var u=findUser(id);var x=machines.find(function(y){return y.id===mid;});if(x)x.active=false;audit_(u,'MACHINE_DISABLE','',mid);return {ok:true};},
     apiListItems:function(){return items.slice().sort(function(a,b){return a.order-b.order;}).map(function(i){return {id:i.id,label:i.label,type:i.type,unit:i.unit,min:i.min,max:i.max,order:i.order,active:i.active};});},
     apiSaveItem:function(id,it){var u=findUser(id);if(it.id){var x=items.find(function(y){return y.id===it.id;});Object.assign(x,{label:it.label,type:it.type,unit:it.unit,min:it.min,max:it.max,order:it.order,active:it.active!==false});audit_(u,'ITEM_EDIT','',it.label);}else{items.push({id:uid('ITM'),label:it.label,type:it.type||'number',unit:it.unit||'',min:it.min,max:it.max,order:it.order||items.length+1,active:true});audit_(u,'ITEM_ADD','',it.label);}return {ok:true};},
@@ -759,7 +905,20 @@ var MOCK=(function(){
   };
 })();
 
-function gs(fn){var args=Array.prototype.slice.call(arguments,1);return new Promise(function(res,rej){setTimeout(function(){try{if(typeof MOCK[fn]!=='function')throw new Error('ไม่มีฟังก์ชัน '+fn);res(MOCK[fn].apply(null,args));}catch(e){rej(e);}},120);});}
+function jsonp(url){return new Promise(function(res,rej){
+  var cb='cb_'+Date.now()+'_'+Math.floor(Math.random()*1e6);var s=document.createElement('script');var done=false;
+  function cleanup(){try{delete window[cb];}catch(e){window[cb]=undefined;}if(s.parentNode)s.parentNode.removeChild(s);}
+  window[cb]=function(d){done=true;res(d);cleanup();};
+  s.onerror=function(){if(!done){cleanup();rej(new Error('เชื่อมต่อเซิร์ฟเวอร์ไม่ได้'));}};
+  s.src=url+(url.indexOf('?')>-1?'&':'?')+'callback='+cb;document.body.appendChild(s);
+  setTimeout(function(){if(!done){cleanup();rej(new Error('หมดเวลาเชื่อมต่อเซิร์ฟเวอร์'));}},20000);
+});}
+function gs(fn){var args=Array.prototype.slice.call(arguments,1);
+  if(BACKEND_URL){
+    return jsonp(BACKEND_URL+'?action='+encodeURIComponent(fn)+'&args='+encodeURIComponent(JSON.stringify(args)))
+      .then(function(r){if(r&&r.error)throw new Error(r.error);return r?r.result:null;});
+  }
+  return new Promise(function(res,rej){setTimeout(function(){try{if(typeof MOCK[fn]!=='function')throw new Error('ไม่มีฟังก์ชัน '+fn);res(MOCK[fn].apply(null,args));}catch(e){rej(e);}},120);});}
 
 function _pdfReportHtml(rec){
   var rows=rec.data.map(function(d,i){
