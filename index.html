@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="th" data-theme="dark">
 <head>
+<base target="_top">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Daily PPM · Air Compressor — Demo</title>
@@ -243,7 +244,7 @@ textarea.input{resize:vertical;min-height:70px}
 </head>
 <body>
   <div id="loadingView">
-    <img src="TSAT4.jpg" alt="TSAT-4">
+    <img id="loadLogo" src="TSAT4.jpg" alt="TSAT-4">
     <div class="ld-title">Maintenance <span class="o">TS</span><span class="g">AT</span>-<span class="b">4</span></div>
     <div class="ld-sub">กำลังเข้าสู่ระบบ…</div>
     <div class="ld-bar"><i></i></div>
@@ -251,7 +252,7 @@ textarea.input{resize:vertical;min-height:70px}
 
   <div id="loginView" class="login-wrap">
     <div class="login-card">
-      <img src="TSAT4.jpg" alt="TSAT-4" style="width:140px;height:140px;object-fit:contain;border-radius:16px;margin-bottom:8px">
+      <img id="loginLogo" src="TSAT4.jpg" alt="TSAT-4" style="width:140px;height:140px;object-fit:contain;border-radius:16px;margin-bottom:8px">
       <div class="login-title">TS AUTOMOTIVE</div>
       <div class="login-sub">Maintenance · Daily PPM Air Compressor</div>
       <label class="fld-label">รหัสพนักงาน (Employee ID)</label>
@@ -266,7 +267,7 @@ textarea.input{resize:vertical;min-height:70px}
   <div id="appShell" class="shell" style="display:none;">
     <aside class="sidebar">
       <div class="side-brand">
-        <img src="TSAT4.jpg" alt="TSAT-4" style="width:40px;height:40px;object-fit:contain;border-radius:8px">
+        <img id="sideLogo" src="TSAT4.jpg" alt="TSAT-4" style="width:40px;height:40px;object-fit:contain;border-radius:8px">
         <div><div class="bt">TSAT-4</div><div class="bs">Maintenance · Daily PPM</div></div>
       </div>
       <nav id="navMenu" class="nav"></nav>
@@ -448,7 +449,7 @@ function machineCard(m){
 var dcMachineId=null;
 function viewDailyCheck(){ if(dcMachineId){renderDailyForm();}else{renderFactoryLayout();} }
 function machineIcon(){return '<svg width="44" height="44" viewBox="0 0 64 64" fill="none" stroke="var(--green)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="19" width="34" height="20" rx="10"/><circle cx="47" cy="24" r="9"/><path d="M14 39l-2 12M36 39l2 12M9 51h32"/><path d="M47 15V8"/></svg>';}
-function floorBg(){return S.floorPlan?'background:#fff url("'+String(S.floorPlan).replace(/"/g,'')+'") center/100% 100% no-repeat':'';}
+function floorBg(){var fp=S.floorPlan;if(fp&&!/^data:|^https?:/.test(fp)&&ASSETS&&ASSETS.floor)fp=ASSETS.floor;return fp?'background:#fff url("'+String(fp).replace(/"/g,'')+'") center/100% 100% no-repeat':'';}
 var _dragEl=null,_dragFloor=null;
 function _layMove(e){if(!_dragEl)return;var r=_dragFloor.getBoundingClientRect();var p=e.touches?e.touches[0]:e;var x=Math.max(0,Math.min(100,(p.clientX-r.left)/r.width*100));var y=Math.max(0,Math.min(100,(p.clientY-r.top)/r.height*100));_dragEl.style.left=x+'%';_dragEl.style.top=y+'%';_dragEl._x=x;_dragEl._y=y;e.preventDefault();}
 function _layUp(){if(!_dragEl)return;var elx=_dragEl;_dragEl=null;elx.style.zIndex='';gs('apiSaveLayout',S.user.employeeId,elx.dataset.id,Math.round(elx._x),Math.round(elx._y)).then(function(){toast('บันทึกตำแหน่ง '+elx.dataset.id,'ok');}).catch(showErr);}
@@ -546,7 +547,13 @@ function initSigPad(canvas){
   canvas._has=function(){return has;};canvas._reset=function(){has=false;};
 }
 function clearSig(canvas){var c=canvas.getContext('2d');c.clearRect(0,0,canvas.width,canvas.height);canvas._reset();}
-function getSig(canvas){return (canvas&&canvas._has&&canvas._has())?canvas.toDataURL('image/png'):'';}
+function getSig(canvas){
+  if(!(canvas&&canvas._has&&canvas._has()))return '';
+  var sw=320,sh=Math.round((canvas.height||150)*sw/(canvas.width||320));
+  var t=document.createElement('canvas');t.width=sw;t.height=sh;
+  var c=t.getContext('2d');c.fillStyle='#ffffff';c.fillRect(0,0,sw,sh);c.drawImage(canvas,0,0,sw,sh);
+  return t.toDataURL('image/jpeg',0.6);
+}
 
 function viewRecords(){
   setPage('ประวัติการตรวจ','Daily PPM Records');topFilterBar(viewRecords);loading();
@@ -629,6 +636,16 @@ function editRecordFlow(rec){
   $('#edSave').onclick=function(){var vals=collectValues($('#edItems'));gs('apiEditRecord',S.user.employeeId,rec.recordId,vals,$('#edComment').value).then(function(r){toast('แก้ไขเรียบร้อย · ผลรวม '+r.overall,'ok');openRecordModal(rec.recordId);}).catch(showErr);};
 }
 function exportPdf(recordId){
+  if(inGAS()){
+    toast('กำลังสร้าง PDF...');
+    gs('apiExportPdf',S.user.employeeId,recordId).then(function(r){
+      var b=atob(r.base64);var arr=new Uint8Array(b.length);for(var i=0;i<b.length;i++)arr[i]=b.charCodeAt(i);
+      var blob=new Blob([arr],{type:'application/pdf'});var url=URL.createObjectURL(blob);
+      var a=document.createElement('a');a.href=url;a.download=r.filename;document.body.appendChild(a);a.click();
+      setTimeout(function(){URL.revokeObjectURL(url);a.remove();},1500);toast('ดาวน์โหลด PDF แล้ว','ok');
+    }).catch(function(e){toast('ดาวน์โหลด PDF ไม่ได้','err');});
+    return;
+  }
   var rec=MOCK._recordHtml(recordId);if(!rec){toast('ไม่พบบันทึก','err');return;}
   var w=window.open('','_blank');w.document.write(_pdfReportHtml(rec));w.document.close();
   setTimeout(function(){w.focus();w.print();},400);
@@ -784,8 +801,9 @@ function bindSeg(sel){var s=$(sel);if(!s)return;s.addEventListener('click',funct
 function segVal(sel,trueVal){var s=$(sel);if(!s)return true;var on=$('button.on',s);return on?on.dataset.v===trueVal:true;}
 function showErr(e){console.error(e);if($('#content'))$('#content').innerHTML='<div class="empty">เกิดข้อผิดพลาด: '+esc(e&&e.message||e)+'</div>';toast('เกิดข้อผิดพลาด','err');}
 setInterval(function(){if(S.user)refreshNotifs();},60000);
+loadAssets();
 
-/* ===== DEMO MOCK BACKEND ===== */
+/* ===== DEMO MOCK BACKEND (used only when not in Apps Script / no BACKEND_URL) ===== */
 var MOCK=(function(){
   function pad(n){return (n<10?'0':'')+n;}
   function dstr(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
@@ -913,12 +931,26 @@ function jsonp(url){return new Promise(function(res,rej){
   s.src=url+(url.indexOf('?')>-1?'&':'?')+'callback='+cb;document.body.appendChild(s);
   setTimeout(function(){if(!done){cleanup();rej(new Error('หมดเวลาเชื่อมต่อเซิร์ฟเวอร์'));}},20000);
 });}
+function inGAS(){return (typeof google!=='undefined'&&google.script&&google.script.run);}
 function gs(fn){var args=Array.prototype.slice.call(arguments,1);
+  if(inGAS()){
+    return new Promise(function(res,rej){
+      google.script.run.withSuccessHandler(res).withFailureHandler(function(e){rej(new Error(e&&e.message||e));})[fn].apply(null,args);
+    });
+  }
   if(BACKEND_URL){
     return jsonp(BACKEND_URL+'?action='+encodeURIComponent(fn)+'&args='+encodeURIComponent(JSON.stringify(args)))
       .then(function(r){if(r&&r.error)throw new Error(r.error);return r?r.result:null;});
   }
   return new Promise(function(res,rej){setTimeout(function(){try{if(typeof MOCK[fn]!=='function')throw new Error('ไม่มีฟังก์ชัน '+fn);res(MOCK[fn].apply(null,args));}catch(e){rej(e);}},120);});}
+var ASSETS=null;
+function loadAssets(){
+  if(!inGAS())return;
+  gs('getAssets').then(function(a){ASSETS=a||{};
+    if(ASSETS.logo){['loginLogo','sideLogo','loadLogo'].forEach(function(id){var e=document.getElementById(id);if(e)e.src=ASSETS.logo;});}
+    if(ASSETS.floor&&!S.floorPlan)S.floorPlan=ASSETS.floor;
+  }).catch(function(){});
+}
 
 function _pdfReportHtml(rec){
   var rows=rec.data.map(function(d,i){
