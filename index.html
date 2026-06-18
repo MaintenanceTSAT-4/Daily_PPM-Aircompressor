@@ -7,6 +7,7 @@
 <title>Daily PPM · Air Compressor — Demo</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="assets.js"></script>
 <style>
 :root, [data-theme="dark"]{
   --bg:#0a0f0b; --bg2:#0e1510; --panel:#121b15;
@@ -51,6 +52,9 @@ button,input,select,textarea{font-family:inherit;color:inherit}
 .login-err{color:var(--red);font-size:13px;margin-top:12px;min-height:18px}
 .login-hint{color:var(--muted2);font-size:11px;margin-top:18px;line-height:1.6}
 .theme-mini{margin-top:14px;background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer}
+.conn-status{margin-top:14px;font-size:11.5px;padding:7px 10px;border-radius:8px;line-height:1.4}
+.conn-status.on{background:rgba(52,210,123,.14);color:var(--green)}
+.conn-status.off{background:rgba(255,177,60,.16);color:var(--amber)}
 
 .shell{display:flex;min-height:100vh}
 .sidebar{width:248px;flex-shrink:0;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
@@ -260,6 +264,8 @@ textarea.input{resize:vertical;min-height:70px}
       <button id="loginBtn" class="btn btn-primary btn-block">เข้าสู่ระบบ</button>
       <div id="loginErr" class="login-err"></div>
       <div class="login-hint">ตัวอย่าง: 1001 (Operator) · 2001 (Engineer) · 9001 (Admin) · 3001 (Viewer)</div>
+      <div id="connStatus" class="conn-status"></div>
+      <button id="setSrvBtn" class="theme-mini">⚙ ตั้งค่าเซิร์ฟเวอร์ (Google Sheet)</button>
       <button id="loginThemeBtn" class="theme-mini">🌙 / ☀️ สลับธีม</button>
     </div>
   </div>
@@ -318,7 +324,8 @@ textarea.input{resize:vertical;min-height:70px}
  * เว้นว่าง = โหมดเดโม่ (ข้อมูลจำลองในเครื่อง ไม่บันทึกจริง)
  * ตัวอย่าง: var BACKEND_URL='https://script.google.com/macros/s/AKfycb..../exec';
  * ============================================================ */
-var BACKEND_URL='https://script.google.com/macros/s/AKfycbwxJHYKHIWkizLZOJe_s1I-Xz-FwR_XbG4FnFs-5sUS3IX7GSKZc2TTeAolwmpSeU6H_Q/exec';
+var BACKEND_URL='';
+try{ if(!BACKEND_URL){ var _b=localStorage.getItem('ppm_backend'); if(_b) BACKEND_URL=_b; } }catch(e){}
 var S={user:null,machines:[],items:[],date:todayStr(),shift:'all',notifs:[],view:'dashboard'};
 function todayStr(){var d=new Date(),p=function(n){return (n<10?'0':'')+n;};return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());}
 function $(s,el){return (el||document).querySelector(s);}
@@ -450,7 +457,9 @@ function machineCard(m){
 var dcMachineId=null;
 function viewDailyCheck(){ if(dcMachineId){renderDailyForm();}else{renderFactoryLayout();} }
 function machineIcon(){return '<svg width="44" height="44" viewBox="0 0 64 64" fill="none" stroke="var(--green)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="19" width="34" height="20" rx="10"/><circle cx="47" cy="24" r="9"/><path d="M14 39l-2 12M36 39l2 12M9 51h32"/><path d="M47 15V8"/></svg>';}
-function floorBg(){var fp=S.floorPlan;if(fp&&!/^data:|^https?:/.test(fp)&&ASSETS&&ASSETS.floor)fp=ASSETS.floor;return fp?'background:#fff url("'+String(fp).replace(/"/g,'')+'") center/100% 100% no-repeat':'';}
+function floorBg(){var fp=S.floorPlan;
+  if(!fp||!/^data:|^https?:/.test(fp)){fp=(ASSETS&&ASSETS.floor)?ASSETS.floor:(window.DEFAULT_FLOOR||fp);}
+  return fp?'background:#fff url("'+String(fp).replace(/"/g,'')+'") center/100% 100% no-repeat':'';}
 var _dragEl=null,_dragFloor=null;
 function _layMove(e){if(!_dragEl)return;var r=_dragFloor.getBoundingClientRect();var p=e.touches?e.touches[0]:e;var x=Math.max(0,Math.min(100,(p.clientX-r.left)/r.width*100));var y=Math.max(0,Math.min(100,(p.clientY-r.top)/r.height*100));_dragEl.style.left=x+'%';_dragEl.style.top=y+'%';_dragEl._x=x;_dragEl._y=y;e.preventDefault();}
 function _layUp(){if(!_dragEl)return;var elx=_dragEl;_dragEl=null;elx.style.zIndex='';gs('apiSaveLayout',S.user.employeeId,elx.dataset.id,Math.round(elx._x),Math.round(elx._y)).then(function(){toast('บันทึกตำแหน่ง '+elx.dataset.id,'ok');}).catch(showErr);}
@@ -693,7 +702,7 @@ function adminMachines(){
 }
 function machineModal(m){
   m=m||{};
-  var body='<div class="field"><label>รหัสเครื่อง (เว้นว่างให้ระบบสร้าง)</label><input id="mCode" class="input" value="'+esc(m.id||'')+'" '+(m.id?'disabled':'')+'></div><div class="field"><label>ชื่อเครื่องจักร</label><input id="mName" class="input" value="'+esc(m.name||'')+'"></div><div class="field"><label>ตำแหน่ง / Location</label><input id="mLoc" class="input" value="'+esc(m.location||'')+'"></div>'+
+  var body='<div class="field"><label>รหัสเครื่อง'+(m.id?' (แก้ไขได้ — ระบบจะย้ายประวัติให้)':' (เว้นว่างให้ระบบสร้าง)')+'</label><input id="mCode" class="input" value="'+esc(m.id||'')+'"></div><div class="field"><label>ชื่อเครื่องจักร</label><input id="mName" class="input" value="'+esc(m.name||'')+'"></div><div class="field"><label>ตำแหน่ง / Location</label><input id="mLoc" class="input" value="'+esc(m.location||'')+'"></div>'+
     '<div class="section-title" style="margin:4px 0 10px">ตั้งค่า PM ใหญ่ (Major PM)</div>'+
     '<div class="form-grid"><div class="field"><label>ชม.ที่ทำ PM ใหญ่ล่าสุด / เริ่มต้น</label><input id="mPmLast" type="number" step="any" class="input" value="'+(m.pmLastHour!=null&&m.pmLastHour!==''?esc(m.pmLastHour):'')+'"></div>'+
     '<div class="field"><label>รอบ PM ใหญ่ ทุก ๆ (ชม.)</label><input id="mPmInt" type="number" step="any" class="input" value="'+(m.pmInterval!=null&&m.pmInterval!==''?esc(m.pmInterval):'')+'"></div></div>'+
@@ -788,6 +797,14 @@ $('#logoutBtn').onclick=function(){S.user=null;$('#appShell').style.display='non
 $('#hambBtn').onclick=function(){$('.sidebar').classList.toggle('open');};
 function applyDevice(){document.body.classList.toggle('is-mobile',window.matchMedia('(max-width:860px)').matches);}
 window.addEventListener('resize',applyDevice);applyDevice();
+function updateConn(){var e=$('#connStatus');if(!e)return;
+  if(inGAS()){e.className='conn-status on';e.innerHTML='🟢 เชื่อม Google Sheet แล้ว (Apps Script) — ข้อมูลเหมือนกันทุกอุปกรณ์';}
+  else if(BACKEND_URL){e.className='conn-status on';e.innerHTML='🟢 เชื่อม Google Sheet แล้ว — ข้อมูลเหมือนกันทุกอุปกรณ์';}
+  else{e.className='conn-status off';e.innerHTML='🟡 โหมดเดโม่ — ข้อมูลอยู่เฉพาะเครื่องนี้<br>กด “ตั้งค่าเซิร์ฟเวอร์” เพื่อเชื่อม Google Sheet ให้เหมือนกันทุกเครื่อง';}
+}
+$('#setSrvBtn').onclick=function(){var u=prompt('วาง URL ของ Apps Script Web App (ลงท้าย /exec):',BACKEND_URL||'');if(u===null)return;u=u.trim();try{if(u)localStorage.setItem('ppm_backend',u);else localStorage.removeItem('ppm_backend');}catch(e){}BACKEND_URL=u;updateConn();toast(u?'ตั้งค่าเซิร์ฟเวอร์แล้ว':'ล้างค่า (โหมดเดโม่)','ok');};
+updateConn();
+(function(){if(!inGAS()&&window.DEFAULT_LOGO){['loginLogo','sideLogo','loadLogo'].forEach(function(id){var e=document.getElementById(id);if(e)e.src=window.DEFAULT_LOGO;});}})();
 
 function showModal(title,bodyHtml,footHtml){
   $('#modalHost').innerHTML='<div class="modal-bg" id="modalBg"><div class="modal"><div class="modal-head"><h3>'+title+'</h3><button class="x-btn" id="modalX">✕</button></div><div class="modal-body">'+bodyHtml+'</div><div class="modal-foot">'+(footHtml||'')+'</div></div></div>';
@@ -855,7 +872,7 @@ var MOCK=(function(){
   function activeMachines(){return machines.filter(function(m){return m.active;}).map(function(m){return {id:m.id,name:m.name,location:m.location};});}
   function activeItems(){return items.filter(function(i){return i.active;}).sort(function(a,b){return a.order-b.order;}).map(function(i){return {id:i.id,label:i.label,type:i.type,unit:i.unit,min:i.min,max:i.max,order:i.order};});}
   function findUser(id){return users.find(function(u){return String(u.employeeId)===String(id).trim();});}
-  function audit_(u,a,r,d){audit.unshift({time:nowStr(),employeeId:u?u.employeeId:'',name:u?u.name:'',action:a,recordId:r||'',detail:d||''});}
+  function audit_(u,a,r,d){audit.unshift({time:nowStr(),employeeId:u?u.employeeId:'',name:u?u.name:'',action:a,recordId:r||'',detail:d||''});if(audit.length>50)audit.length=50;}
   function notify(target,type,msg,rid){notifs.unshift({id:uid('NTF'),target:target,type:type,message:msg,recordId:rid||'',createdAt:nowStr(),read:false});}
   function buildDetail(values){var map={};items.forEach(function(i){map[i.id]=i;});return values.map(function(v){var it=map[v.itemId]||{label:v.label,type:'text',unit:''};return {itemId:v.itemId,label:it.label,type:it.type,unit:it.unit,value:v.value,result:evalItem(it,v.value)};});}
   function runHourFromRec(rec){var rh='';if(rec){var f=rec.data.find(function(d){return d.unit==='hr'||/running hour/i.test(d.label);});if(f)rh=f.value;}return rh;}
@@ -920,7 +937,7 @@ var MOCK=(function(){
     apiMarkAllRead:function(id){var u=findUser(id);var t=[u.employeeId];if(u.role==='engineer'||u.role==='admin')t.push('engineer');if(u.role==='admin')t.push('admin');notifs.forEach(function(n){if(t.indexOf(String(n.target))!==-1)n.read=true;});return {ok:true};},
     apiMachineLayout:function(id){findUser(id);return machines.map(function(m){return {id:m.id,name:m.name,active:m.active,layoutX:m.layoutX,layoutY:m.layoutY,image:m.image||''};});},
     apiListMachines:function(){return machines.map(function(m){return {id:m.id,name:m.name,location:m.location,active:m.active,pmLastHour:m.pmLastHour,pmInterval:m.pmInterval,layoutX:m.layoutX,layoutY:m.layoutY,image:m.image||''};});},
-    apiSaveMachine:function(id,m){var u=findUser(id);if(m.id){var x=machines.find(function(y){return y.id===m.id;});Object.assign(x,{name:m.name,location:m.location,active:m.active!==false,pmLastHour:m.pmLastHour,pmInterval:m.pmInterval,layoutX:m.layoutX,layoutY:m.layoutY,image:m.image});audit_(u,'MACHINE_EDIT','',m.name);}else{machines.push({id:(m.code&&m.code.trim())?m.code.trim():uid('MC'),name:m.name,location:m.location,active:true,pmLastHour:m.pmLastHour,pmInterval:m.pmInterval,layoutX:m.layoutX,layoutY:m.layoutY,image:m.image});audit_(u,'MACHINE_ADD','',m.name);}return {ok:true};},
+    apiSaveMachine:function(id,m){var u=findUser(id);if(m.id){var x=machines.find(function(y){return y.id===m.id;});if(!x)throw new Error('ไม่พบเครื่องจักร');var nid=(m.code&&m.code.trim())?m.code.trim():m.id;if(nid!==m.id){if(machines.find(function(y){return y.id===nid;}))throw new Error('รหัสซ้ำ: '+nid);records.forEach(function(r){if(r.machineId===m.id){r.machineId=nid;}});x.id=nid;}Object.assign(x,{name:m.name,location:m.location,active:m.active!==false,pmLastHour:m.pmLastHour,pmInterval:m.pmInterval,layoutX:m.layoutX,layoutY:m.layoutY,image:m.image});audit_(u,'MACHINE_EDIT','',nid+' / '+m.name);}else{machines.push({id:(m.code&&m.code.trim())?m.code.trim():uid('MC'),name:m.name,location:m.location,active:true,pmLastHour:m.pmLastHour,pmInterval:m.pmInterval,layoutX:m.layoutX,layoutY:m.layoutY,image:m.image});audit_(u,'MACHINE_ADD','',m.name);}return {ok:true};},
     apiDeleteMachine:function(id,mid){var u=findUser(id);var x=machines.find(function(y){return y.id===mid;});if(x)x.active=false;audit_(u,'MACHINE_DISABLE','',mid);return {ok:true};},
     apiListItems:function(){return items.slice().sort(function(a,b){return a.order-b.order;}).map(function(i){return {id:i.id,label:i.label,type:i.type,unit:i.unit,min:i.min,max:i.max,order:i.order,active:i.active};});},
     apiSaveItem:function(id,it){var u=findUser(id);if(it.id){var x=items.find(function(y){return y.id===it.id;});Object.assign(x,{label:it.label,type:it.type,unit:it.unit,min:it.min,max:it.max,order:it.order,active:it.active!==false});audit_(u,'ITEM_EDIT','',it.label);}else{items.push({id:uid('ITM'),label:it.label,type:it.type||'number',unit:it.unit||'',min:it.min,max:it.max,order:it.order||items.length+1,active:true});audit_(u,'ITEM_ADD','',it.label);}return {ok:true};},
