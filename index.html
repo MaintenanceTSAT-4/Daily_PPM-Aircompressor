@@ -318,7 +318,7 @@ textarea.input{resize:vertical;min-height:70px}
  * เว้นว่าง = โหมดเดโม่ (ข้อมูลจำลองในเครื่อง ไม่บันทึกจริง)
  * ตัวอย่าง: var BACKEND_URL='https://script.google.com/macros/s/AKfycb..../exec';
  * ============================================================ */
-var BACKEND_URL='https://script.google.com/macros/s/AKfycbxB8oPh1xqClqDI95e-_N-G1ufXHJFmbz-VA1goAfm9pr0vfWma9XLgVlXa1Y0c79ktiQ/exec';
+var BACKEND_URL='';
 var S={user:null,machines:[],items:[],date:todayStr(),shift:'all',notifs:[],view:'dashboard'};
 function todayStr(){var d=new Date(),p=function(n){return (n<10?'0':'')+n;};return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());}
 function $(s,el){return (el||document).querySelector(s);}
@@ -378,7 +378,8 @@ function startApp(){
 function topFilterBar(onChange){var bar=$('#topFilters');bar.innerHTML='';var date=el('<input type="date" class="date-input" value="'+S.date+'">');date.onchange=function(){S.date=date.value;onChange&&onChange();};bar.appendChild(date);}
 function clearTopFilters(){$('#topFilters').innerHTML='';}
 function setPage(title,sub){$('#pageTitle').textContent=title;$('#pageSub').textContent=sub||'';}
-function loading(){$('#content').innerHTML='<div class="spinner"></div>';}
+var _silent=false;
+function loading(){if(_silent)return;$('#content').innerHTML='<div class="spinner"></div>';}
 
 function viewDashboard(){
   setPage('Machine Overview','Daily PPM · Air Compressor');topFilterBar(viewDashboard);loading();
@@ -800,7 +801,16 @@ function attr(o){return esc(JSON.stringify(o)).replace(/'/g,'&#39;');}
 function bindSeg(sel){var s=$(sel);if(!s)return;s.addEventListener('click',function(e){if(e.target.tagName==='BUTTON'){$all('button',s).forEach(function(b){b.classList.remove('on');});e.target.classList.add('on');}});}
 function segVal(sel,trueVal){var s=$(sel);if(!s)return true;var on=$('button.on',s);return on?on.dataset.v===trueVal:true;}
 function showErr(e){console.error(e);if($('#content'))$('#content').innerHTML='<div class="empty">เกิดข้อผิดพลาด: '+esc(e&&e.message||e)+'</div>';toast('เกิดข้อผิดพลาด','err');}
-setInterval(function(){if(S.user)refreshNotifs();},60000);
+/* อัปเดตข้อมูลจาก Google Sheet อัตโนมัติทุก 30 วินาที (ไม่รบกวนตอนกรอกฟอร์ม/เปิด dialog) */
+function autoRefresh(){
+  if(!S.user)return;
+  if((($('#modalHost')&&$('#modalHost').innerHTML)||'').trim()!=='')return; // มี dialog เปิดอยู่
+  if(S.view==='dailycheck'||S.view==='admin')return;                        // กำลังกรอก/จัดผัง
+  refreshNotifs();
+  var R={dashboard:viewDashboard,records:viewRecords,approvals:viewApprovals,audit:viewAudit};
+  if(R[S.view]){_silent=true;try{R[S.view]();}finally{_silent=false;}}
+}
+setInterval(autoRefresh,30000); /* auto-sync Google Sheet ทุก 30 วิ */
 loadAssets();
 
 /* ===== DEMO MOCK BACKEND (used only when not in Apps Script / no BACKEND_URL) ===== */
