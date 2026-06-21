@@ -339,7 +339,7 @@ textarea.input{resize:vertical;min-height:70px}
  * เว้นว่าง = โหมดเดโม่ (ข้อมูลจำลองในเครื่อง ไม่บันทึกจริง)
  * ตัวอย่าง: var BACKEND_URL='https://script.google.com/macros/s/AKfycb..../exec';
  * ============================================================ */
-var BACKEND_URL='https://script.google.com/macros/s/AKfycbwCwy3YiJsW4DBg3bpVgDKcSXC_dhczMx2Dt_Hnr3xpXMsb18OWlImzamRLLqICS6RNQw/exec';
+var BACKEND_URL='';
 try{ if(!BACKEND_URL){ var _b=localStorage.getItem('ppm_backend'); if(_b) BACKEND_URL=_b; } }catch(e){}
 var S={user:null,machines:[],items:[],date:todayStr(),shift:'all',notifs:[],view:'dashboard'};
 function todayStr(){var d=new Date(),p=function(n){return (n<10?'0':'')+n;};return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());}
@@ -377,6 +377,7 @@ var NAV={
   dailycheck:{label:'Daily Check',ic:'📝',roles:['operator','admin'],group:'การผลิต'},
   approvals:{label:'อนุมัติงาน',ic:'✅',roles:['engineer','admin'],group:'การผลิต'},
   records:{label:'ประวัติการตรวจ',ic:'📁',roles:['operator','engineer','admin','viewer'],group:'การผลิต'},
+  report:{label:'รายงานรายเดือน',ic:'📑',roles:['engineer','admin','viewer'],group:'การผลิต'},
   admin:{label:'Admin · ตั้งค่า',ic:'⚙️',roles:['admin'],group:'ระบบ'},
   audit:{label:'Audit Log',ic:'🔎',roles:['engineer','admin'],group:'ระบบ'}
 };
@@ -388,7 +389,7 @@ function buildNav(){
 function go(view){
   S.view=view;$all('.nav-item').forEach(function(n){n.classList.toggle('active',n.dataset.view===view);});
   if(window.innerWidth<=860) $('.sidebar').classList.remove('open');
-  var R={dashboard:viewDashboard,dailycheck:viewDailyCheck,approvals:viewApprovals,records:viewRecords,admin:viewAdmin,audit:viewAudit};
+  var R={dashboard:viewDashboard,dailycheck:viewDailyCheck,approvals:viewApprovals,records:viewRecords,report:viewReport,admin:viewAdmin,audit:viewAudit};
   (R[view]||viewDashboard)();
 }
 function startApp(){
@@ -817,6 +818,77 @@ function userModal(u){
 }
 function refreshMachines(cb){gs('apiBootstrap',S.user.employeeId).then(function(b){S.machines=b.machines;S.items=b.items;cb&&cb();});}
 function refreshItems(cb){gs('apiBootstrap',S.user.employeeId).then(function(b){S.items=b.items;S.machines=b.machines;cb&&cb();});}
+
+/* ============================================================
+ * MONTHLY REPORT (สรุปรายเดือน → PDF) — ตัวอย่างเบื้องต้น
+ * ============================================================ */
+function viewReport(){
+  setPage('รายงานรายเดือน','สรุป Daily PPM รายเดือน (รายเครื่องจักร)');clearTopFilters();
+  var mOpts=S.machines.map(function(m){return '<option value="'+esc(m.id)+'">'+esc(m.name)+' ('+esc(m.id)+')</option>';}).join('');
+  var nowM=todayStr().slice(0,7);
+  $('#content').innerHTML='<div class="panel"><div class="panel-head"><h3>สรุปรายเดือน → Export PDF</h3></div><div class="modal-body">'+
+    '<div class="form-grid"><div class="field"><label>เครื่องจักร</label><select id="rpMc" class="select" style="width:100%">'+mOpts+'</select></div>'+
+    '<div class="field"><label>เดือน</label><input id="rpMonth" type="month" class="input" value="'+nowM+'"></div></div>'+
+    '<div class="row-actions"><button class="btn btn-ghost" id="rpView">ดูสรุป</button><button class="btn btn-primary" id="rpPdf">📄 Export PDF</button></div>'+
+    '<div id="rpPreview" class="mt"></div></div></div>';
+  $('#rpView').onclick=loadReport;
+  $('#rpPdf').onclick=exportMonthlyPdf;
+  $('#rpMc').onchange=loadReport;$('#rpMonth').onchange=loadReport;
+  loadReport();
+}
+function reportData(cb){
+  var mid=$('#rpMc').value, month=$('#rpMonth').value, today=todayStr();
+  $('#rpPreview').innerHTML='<div class="spinner"></div>';
+  gs('apiListRecords',S.user.employeeId,{}).then(function(rows){
+    var rs=rows.filter(function(r){return r.machineId===mid && String(r.date).slice(0,7)===month && r.date<=today;});
+    rs.sort(function(a,b){return a.date<b.date?-1:1;});
+    var st={total:rs.length,ok:0,ng:0,approved:0,pending:0,rejected:0,days:{}};
+    rs.forEach(function(r){if(r.overall==='OK')st.ok++;if(r.overall==='NG')st.ng++;if(r.status==='Approved')st.approved++;if(r.status==='Submitted')st.pending++;if(r.status==='Rejected')st.rejected++;st.days[r.date]=1;});
+    st.daysChecked=Object.keys(st.days).length;
+    var m=S.machines.find(function(x){return x.id===mid;})||{id:mid,name:mid};
+    cb(m,month,rs,st);
+  }).catch(showErr);
+}
+function reportStatChip(st){
+  return '<div class="kpi-grid" style="margin-bottom:14px">'+
+    kpiCard('','วันที่ตรวจ',st.daysChecked,'วัน','รวม '+st.total+' รายการ')+
+    kpiCard('','ผล OK',st.ok,'รายการ','ปกติ')+
+    kpiCard('r','ผล NG',st.ng,'รายการ',st.ng>0?'⚠ ผิดปกติ':'-')+
+    kpiCard('b','อนุมัติแล้ว',st.approved,'รายการ','รออนุมัติ '+st.pending)+'</div>';
+}
+function loadReport(){
+  reportData(function(m,month,rs,st){
+    var body=rs.map(function(r){return '<tr><td>'+esc(r.date)+'</td><td>'+esc(r.operatorName)+'</td><td>'+resultChip(r.overall)+'</td><td>'+statusChip(r.status)+'</td><td class="muted">'+esc(r.engineerName||'-')+'</td></tr>';}).join('');
+    var tbl=rs.length?('<table class="tbl"><thead><tr><th>วันที่</th><th>ผู้ตรวจ</th><th>ผล</th><th>สถานะ</th><th>ผู้อนุมัติ</th></tr></thead><tbody>'+body+'</tbody></table>'):'<div class="empty">ไม่มีข้อมูลในเดือนนี้</div>';
+    $('#rpPreview').innerHTML='<div class="section-title">'+esc(m.name)+' ('+esc(m.id)+') · เดือน '+esc(month)+' (ถึง '+esc(todayStr())+')</div>'+reportStatChip(st)+tbl;
+  });
+}
+function buildMonthlyReportHtml(m,month,rs,st){
+  var rows=rs.map(function(r,i){
+    var oc=r.overall==='NG'?'#c0392b':(r.overall==='OK'?'#1e7e4f':'#777');
+    var stTH={Approved:'อนุมัติแล้ว',Submitted:'รออนุมัติ',Rejected:'ตีกลับ',Draft:'ร่าง'}[r.status]||r.status;
+    return '<tr><td style="text-align:center">'+(i+1)+'</td><td>'+esc(r.date)+'</td><td>'+esc(r.operatorName)+'</td><td style="text-align:center;color:'+oc+';font-weight:bold">'+(r.overall||'-')+'</td><td style="text-align:center">'+stTH+'</td><td>'+esc(r.engineerName||'-')+'</td></tr>';
+  }).join('');
+  return '<html><head><meta charset="utf-8"><title>Monthly PPM '+esc(m.id)+' '+esc(month)+'</title><style>'+
+    'body{font-family:Arial,sans-serif;color:#222;padding:24px}h1{color:#1e7e4f;font-size:20px;margin:0}.sub{color:#666;font-size:12px;margin-bottom:12px}'+
+    'table{width:100%;border-collapse:collapse;font-size:12px}th{background:#1e7e4f;color:#fff;padding:6px;border:1px solid #1e7e4f}td{border:1px solid #ccc;padding:5px}'+
+    '.sum{margin:10px 0;font-size:13px}.sum b{display:inline-block;min-width:120px}.foot{margin-top:16px;font-size:10px;color:#999;border-top:1px dashed #ccc;padding-top:8px}</style></head><body>'+
+    '<h1>THAI SUMMIT · Maintenance</h1><div class="sub">สรุป Daily PPM รายเดือน — Air Compressor</div>'+
+    '<div class="sum"><b>เครื่องจักร:</b> '+esc(m.name)+' ('+esc(m.id)+')<br><b>เดือน:</b> '+esc(month)+' (ถึงวันที่ '+esc(todayStr())+')<br>'+
+    '<b>วันที่ตรวจ:</b> '+st.daysChecked+' วัน &nbsp; <b>รวม:</b> '+st.total+' รายการ<br>'+
+    '<b>ผล OK / NG:</b> '+st.ok+' / '+st.ng+' &nbsp;&nbsp; <b>อนุมัติ/รอ/ตีกลับ:</b> '+st.approved+' / '+st.pending+' / '+st.rejected+'</div>'+
+    (rs.length?('<table><thead><tr><th style="width:32px">#</th><th>วันที่</th><th>ผู้ตรวจ</th><th style="width:50px">ผล</th><th style="width:90px">สถานะ</th><th>ผู้อนุมัติ</th></tr></thead><tbody>'+rows+'</tbody></table>'):'<p>ไม่มีข้อมูลในเดือนนี้</p>')+
+    '<div class="foot">ออกรายงานเมื่อ '+esc(todayStr())+' · ระบบ Maintenance Daily PPM (TSAT-4) · *แบบฟอร์มฉบับเต็มจะเพิ่มภายหลัง</div></body></html>';
+}
+function exportMonthlyPdf(){
+  reportData(function(m,month,rs,st){
+    var w=window.open('','_blank');
+    if(!w){toast('เบราว์เซอร์บล็อกป๊อปอัป','err');return;}
+    w.document.write(buildMonthlyReportHtml(m,month,rs,st));w.document.close();
+    setTimeout(function(){w.focus();w.print();},400);
+    toast('เปิดหน้าพิมพ์ PDF (เลือก Save as PDF)','ok');
+  });
+}
 
 function viewAudit(){
   setPage('Audit Log','บันทึกการเปลี่ยนแปลงทั้งหมด');clearTopFilters();loading();
