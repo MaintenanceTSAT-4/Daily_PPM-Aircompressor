@@ -324,7 +324,7 @@ textarea.input{resize:vertical;min-height:70px}
  * เว้นว่าง = โหมดเดโม่ (ข้อมูลจำลองในเครื่อง ไม่บันทึกจริง)
  * ตัวอย่าง: var BACKEND_URL='https://script.google.com/macros/s/AKfycb..../exec';
  * ============================================================ */
-var BACKEND_URL='https://script.google.com/macros/s/AKfycbwxJHYKHIWkizLZOJe_s1I-Xz-FwR_XbG4FnFs-5sUS3IX7GSKZc2TTeAolwmpSeU6H_Q/exec';
+var BACKEND_URL='';
 try{ if(!BACKEND_URL){ var _b=localStorage.getItem('ppm_backend'); if(_b) BACKEND_URL=_b; } }catch(e){}
 var S={user:null,machines:[],items:[],date:todayStr(),shift:'all',notifs:[],view:'dashboard'};
 function todayStr(){var d=new Date(),p=function(n){return (n<10?'0':'')+n;};return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());}
@@ -457,9 +457,20 @@ function machineCard(m){
 var dcMachineId=null;
 function viewDailyCheck(){ if(dcMachineId){renderDailyForm();}else{renderFactoryLayout();} }
 function machineIcon(){return '<svg width="44" height="44" viewBox="0 0 64 64" fill="none" stroke="var(--green)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="19" width="34" height="20" rx="10"/><circle cx="47" cy="24" r="9"/><path d="M14 39l-2 12M36 39l2 12M9 51h32"/><path d="M47 15V8"/></svg>';}
-function floorBg(){var fp=S.floorPlan;
-  if(!fp||!/^data:|^https?:/.test(fp)){fp=(ASSETS&&ASSETS.floor)?ASSETS.floor:(window.DEFAULT_FLOOR||fp);}
-  return fp?'background:#fff url("'+String(fp).replace(/"/g,'')+'") center/100% 100% no-repeat':'';}
+function effFloor(){var fp=S.floorPlan;
+  if(fp&&/^data:|^https?:/.test(fp))return fp;
+  if(ASSETS&&ASSETS.floor)return ASSETS.floor;
+  if(window.DEFAULT_FLOOR)return window.DEFAULT_FLOOR;
+  return fp||'';}
+function applyFloorStyle(){
+  var url=effFloor();var st=document.getElementById('floorCss');
+  if(!url){if(st)st.textContent='';return;}
+  if(!st){st=document.createElement('style');st.id='floorCss';document.head.appendChild(st);}
+  var want=".floor{background:#fff url('"+url.replace(/'/g,'')+"') center/100% 100% no-repeat}";
+  if(st.textContent!==want)st.textContent=want;
+}
+/* ตั้งพื้นหลังผังผ่าน CSS ครั้งเดียว (ไม่ฝัง data-uri ซ้ำทุก render → ลดอาการหน่วง) */
+function floorBg(){applyFloorStyle();return '';}
 var _dragEl=null,_dragFloor=null;
 function _layMove(e){if(!_dragEl)return;var r=_dragFloor.getBoundingClientRect();var p=e.touches?e.touches[0]:e;var x=Math.max(0,Math.min(100,(p.clientX-r.left)/r.width*100));var y=Math.max(0,Math.min(100,(p.clientY-r.top)/r.height*100));_dragEl.style.left=x+'%';_dragEl.style.top=y+'%';_dragEl._x=x;_dragEl._y=y;e.preventDefault();}
 function _layUp(){if(!_dragEl)return;var elx=_dragEl;_dragEl=null;elx.style.zIndex='';gs('apiSaveLayout',S.user.employeeId,elx.dataset.id,Math.round(elx._x),Math.round(elx._y)).then(function(){toast('บันทึกตำแหน่ง '+elx.dataset.id,'ok');}).catch(showErr);}
