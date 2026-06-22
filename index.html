@@ -126,6 +126,9 @@ table.tbl th{text-align:left;color:var(--muted);font-weight:600;padding:11px 14p
 table.tbl td{padding:11px 14px;border-bottom:1px solid var(--border-soft)}
 table.tbl tr:last-child td{border-bottom:none}
 table.tbl tr:hover td{background:var(--card-h)}
+.tbl.rpt th,.tbl.rpt td{text-align:center;white-space:nowrap;font-size:12px}
+.tbl td.cell-ng{background:rgba(255,93,93,.18);color:var(--red);font-weight:600}
+.tbl td.cell-ok{background:rgba(52,210,123,.12)}
 .chip{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11.5px;font-weight:600}
 .chip.ok{background:rgba(52,210,123,.16);color:var(--green)}
 .chip.ng{background:rgba(255,93,93,.16);color:var(--red)}
@@ -339,7 +342,7 @@ textarea.input{resize:vertical;min-height:70px}
  * เว้นว่าง = โหมดเดโม่ (ข้อมูลจำลองในเครื่อง ไม่บันทึกจริง)
  * ตัวอย่าง: var BACKEND_URL='https://script.google.com/macros/s/AKfycb..../exec';
  * ============================================================ */
-var BACKEND_URL='https://script.google.com/macros/s/AKfycbzLtK_-JEX_D4raaBIierD-A3qBLJV2Prfgn2LAE7jqPrKC5_iJkn5FRGedIqMO2J7K/exec';
+var BACKEND_URL='';
 try{ if(!BACKEND_URL){ var _b=localStorage.getItem('ppm_backend'); if(_b) BACKEND_URL=_b; } }catch(e){}
 var S={user:null,machines:[],items:[],date:todayStr(),shift:'all',notifs:[],view:'dashboard'};
 function todayStr(){var d=new Date(),p=function(n){return (n<10?'0':'')+n;};return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());}
@@ -829,19 +832,29 @@ function viewReport(){
   $('#content').innerHTML='<div class="panel"><div class="panel-head"><h3>สรุปรายเดือน → Export PDF</h3></div><div class="modal-body">'+
     '<div class="form-grid"><div class="field"><label>เครื่องจักร</label><select id="rpMc" class="select" style="width:100%">'+mOpts+'</select></div>'+
     '<div class="field"><label>เดือน</label><input id="rpMonth" type="month" class="input" value="'+nowM+'"></div></div>'+
-    '<div class="row-actions"><button class="btn btn-ghost" id="rpView">ดูสรุป</button><button class="btn btn-primary" id="rpPdf">📄 Export PDF</button></div>'+
+    '<div class="row-actions"><button class="btn btn-ghost" id="rpView">ดูสรุป</button><button class="btn btn-primary" id="rpPdf">📄 Export PDF (เมทริกซ์)</button><button class="btn btn-amber" id="rpForm">📋 Export ตามฟอร์ม PPM</button></div>'+
     '<div id="rpPreview" class="mt"></div></div></div>';
   $('#rpView').onclick=loadReport;
   $('#rpPdf').onclick=exportMonthlyPdf;
+  $('#rpForm').onclick=exportFormPdf;
   $('#rpMc').onchange=loadReport;$('#rpMonth').onchange=loadReport;
   loadReport();
 }
+function exportFormPdf(){
+  if(!inGAS() && !BACKEND_URL){toast('Export ตามฟอร์ม ต้องเชื่อม Google Sheet (Apps Script) ก่อน','err');return;}
+  var mid=$('#rpMc').value, month=$('#rpMonth').value;
+  toast('กำลังสร้างฟอร์ม PDF...');
+  gs('apiExportMonthlyForm',S.user.employeeId,mid,month).then(function(r){
+    var b=atob(r.base64);var arr=new Uint8Array(b.length);for(var i=0;i<b.length;i++)arr[i]=b.charCodeAt(i);
+    var blob=new Blob([arr],{type:'application/pdf'});var url=URL.createObjectURL(blob);
+    var a=document.createElement('a');a.href=url;a.download=r.filename;document.body.appendChild(a);a.click();
+    setTimeout(function(){URL.revokeObjectURL(url);a.remove();},1500);toast('ดาวน์โหลดฟอร์ม PDF แล้ว','ok');
+  }).catch(function(e){toast('สร้างฟอร์มไม่ได้: '+(e&&e.message||e),'err');});
+}
 function reportData(cb){
-  var mid=$('#rpMc').value, month=$('#rpMonth').value, today=todayStr();
+  var mid=$('#rpMc').value, month=$('#rpMonth').value;
   $('#rpPreview').innerHTML='<div class="spinner"></div>';
-  gs('apiListRecords',S.user.employeeId,{}).then(function(rows){
-    var rs=rows.filter(function(r){return r.machineId===mid && String(r.date).slice(0,7)===month && r.date<=today;});
-    rs.sort(function(a,b){return a.date<b.date?-1:1;});
+  gs('apiMonthly',S.user.employeeId,mid,month).then(function(rs){
     var st={total:rs.length,ok:0,ng:0,approved:0,pending:0,rejected:0,days:{}};
     rs.forEach(function(r){if(r.overall==='OK')st.ok++;if(r.overall==='NG')st.ng++;if(r.status==='Approved')st.approved++;if(r.status==='Submitted')st.pending++;if(r.status==='Rejected')st.rejected++;st.days[r.date]=1;});
     st.daysChecked=Object.keys(st.days).length;
@@ -856,29 +869,35 @@ function reportStatChip(st){
     kpiCard('r','ผล NG',st.ng,'รายการ',st.ng>0?'⚠ ผิดปกติ':'-')+
     kpiCard('b','อนุมัติแล้ว',st.approved,'รายการ','รออนุมัติ '+st.pending)+'</div>';
 }
+function cellVal(rec,itId){var d=(rec.data||[]).find(function(x){return x.itemId===itId;});if(!d)return {t:'-',c:''};return {t:valDisplay(d),c:d.result==='fail'?'ng':(d.result==='pass'?'ok':'')};}
 function loadReport(){
   reportData(function(m,month,rs,st){
-    var body=rs.map(function(r){return '<tr><td>'+esc(r.date)+'</td><td>'+esc(r.operatorName)+'</td><td>'+resultChip(r.overall)+'</td><td>'+statusChip(r.status)+'</td><td class="muted">'+esc(r.engineerName||'-')+'</td></tr>';}).join('');
-    var tbl=rs.length?('<table class="tbl"><thead><tr><th>วันที่</th><th>ผู้ตรวจ</th><th>ผล</th><th>สถานะ</th><th>ผู้อนุมัติ</th></tr></thead><tbody>'+body+'</tbody></table>'):'<div class="empty">ไม่มีข้อมูลในเดือนนี้</div>';
+    var items=S.items;
+    var head='<th>วันที่</th><th>ผู้ตรวจ</th>'+items.map(function(it){return '<th>'+esc(it.label)+(it.unit?' ('+esc(it.unit)+')':'')+'</th>';}).join('')+'<th>ผล</th>';
+    var body=rs.map(function(r){
+      var cells=items.map(function(it){var c=cellVal(r,it.id);return '<td class="'+(c.c==='ng'?'cell-ng':c.c==='ok'?'cell-ok':'')+'">'+esc(c.t)+'</td>';}).join('');
+      return '<tr><td>'+esc(r.date)+'</td><td>'+esc(r.operatorName)+'</td>'+cells+'<td>'+resultChip(r.overall)+'</td></tr>';
+    }).join('');
+    var tbl=rs.length?('<div style="overflow:auto"><table class="tbl rpt"><thead><tr>'+head+'</tr></thead><tbody>'+body+'</tbody></table></div>'):'<div class="empty">ไม่มีข้อมูลในเดือนนี้</div>';
     $('#rpPreview').innerHTML='<div class="section-title">'+esc(m.name)+' ('+esc(m.id)+') · เดือน '+esc(month)+' (ถึง '+esc(todayStr())+')</div>'+reportStatChip(st)+tbl;
   });
 }
 function buildMonthlyReportHtml(m,month,rs,st){
-  var rows=rs.map(function(r,i){
-    var oc=r.overall==='NG'?'#c0392b':(r.overall==='OK'?'#1e7e4f':'#777');
-    var stTH={Approved:'อนุมัติแล้ว',Submitted:'รออนุมัติ',Rejected:'ตีกลับ',Draft:'ร่าง'}[r.status]||r.status;
-    return '<tr><td style="text-align:center">'+(i+1)+'</td><td>'+esc(r.date)+'</td><td>'+esc(r.operatorName)+'</td><td style="text-align:center;color:'+oc+';font-weight:bold">'+(r.overall||'-')+'</td><td style="text-align:center">'+stTH+'</td><td>'+esc(r.engineerName||'-')+'</td></tr>';
+  var items=S.items;
+  var head='<th>วันที่</th><th>ผู้ตรวจ</th>'+items.map(function(it){return '<th>'+esc(it.label)+(it.unit?'<br>('+esc(it.unit)+')':'')+'</th>';}).join('')+'<th>ผล</th>';
+  var rows=rs.map(function(r){
+    var cells=items.map(function(it){var c=cellVal(r,it.id);var col=c.c==='ng'?'#c0392b':(c.c==='ok'?'#1e7e4f':'#333');return '<td style="text-align:center;color:'+col+'">'+esc(c.t)+'</td>';}).join('');
+    var oc=r.overall==='NG'?'#c0392b':'#1e7e4f';
+    return '<tr><td>'+esc(r.date)+'</td><td>'+esc(r.operatorName)+'</td>'+cells+'<td style="text-align:center;font-weight:bold;color:'+oc+'">'+(r.overall||'-')+'</td></tr>';
   }).join('');
   return '<html><head><meta charset="utf-8"><title>Monthly PPM '+esc(m.id)+' '+esc(month)+'</title><style>'+
-    'body{font-family:Arial,sans-serif;color:#222;padding:24px}h1{color:#1e7e4f;font-size:20px;margin:0}.sub{color:#666;font-size:12px;margin-bottom:12px}'+
-    'table{width:100%;border-collapse:collapse;font-size:12px}th{background:#1e7e4f;color:#fff;padding:6px;border:1px solid #1e7e4f}td{border:1px solid #ccc;padding:5px}'+
-    '.sum{margin:10px 0;font-size:13px}.sum b{display:inline-block;min-width:120px}.foot{margin-top:16px;font-size:10px;color:#999;border-top:1px dashed #ccc;padding-top:8px}</style></head><body>'+
-    '<h1>THAI SUMMIT · Maintenance</h1><div class="sub">สรุป Daily PPM รายเดือน — Air Compressor</div>'+
-    '<div class="sum"><b>เครื่องจักร:</b> '+esc(m.name)+' ('+esc(m.id)+')<br><b>เดือน:</b> '+esc(month)+' (ถึงวันที่ '+esc(todayStr())+')<br>'+
-    '<b>วันที่ตรวจ:</b> '+st.daysChecked+' วัน &nbsp; <b>รวม:</b> '+st.total+' รายการ<br>'+
-    '<b>ผล OK / NG:</b> '+st.ok+' / '+st.ng+' &nbsp;&nbsp; <b>อนุมัติ/รอ/ตีกลับ:</b> '+st.approved+' / '+st.pending+' / '+st.rejected+'</div>'+
-    (rs.length?('<table><thead><tr><th style="width:32px">#</th><th>วันที่</th><th>ผู้ตรวจ</th><th style="width:50px">ผล</th><th style="width:90px">สถานะ</th><th>ผู้อนุมัติ</th></tr></thead><tbody>'+rows+'</tbody></table>'):'<p>ไม่มีข้อมูลในเดือนนี้</p>')+
-    '<div class="foot">ออกรายงานเมื่อ '+esc(todayStr())+' · ระบบ Maintenance Daily PPM (TSAT-4) · *แบบฟอร์มฉบับเต็มจะเพิ่มภายหลัง</div></body></html>';
+    '@page{size:A4 landscape;margin:10mm}body{font-family:Arial,sans-serif;color:#222}h1{color:#1e7e4f;font-size:17px;margin:0}.sub{color:#666;font-size:11px;margin-bottom:8px}'+
+    'table{width:100%;border-collapse:collapse;font-size:10px;table-layout:fixed}th{background:#1e7e4f;color:#fff;padding:4px;border:1px solid #1e7e4f;word-wrap:break-word}td{border:1px solid #bbb;padding:3px}'+
+    '.sum{margin:6px 0;font-size:11px}.foot{margin-top:10px;font-size:9px;color:#999;border-top:1px dashed #ccc;padding-top:6px}</style></head><body>'+
+    '<h1>THAI SUMMIT · Maintenance</h1><div class="sub">สรุป Daily PPM รายเดือน — '+esc(m.name)+' ('+esc(m.id)+') · เดือน '+esc(month)+' (ถึงวันที่ '+esc(todayStr())+')</div>'+
+    '<div class="sum">วันที่ตรวจ '+st.daysChecked+' วัน · รวม '+st.total+' รายการ · OK '+st.ok+' · NG '+st.ng+' · อนุมัติ '+st.approved+' · รอ '+st.pending+' · ตีกลับ '+st.rejected+'</div>'+
+    (rs.length?('<table><thead><tr>'+head+'</tr></thead><tbody>'+rows+'</tbody></table>'):'<p>ไม่มีข้อมูลในเดือนนี้</p>')+
+    '<div class="foot">ออกรายงานเมื่อ '+esc(todayStr())+' · ระบบ Maintenance Daily PPM (TSAT-4) · *รูปแบบนี้เป็นตัวอย่าง จะปรับให้ตรงฟอร์ม Excel จริงเมื่อได้รับไฟล์</div></body></html>';
 }
 function exportMonthlyPdf(){
   reportData(function(m,month,rs,st){
@@ -1052,6 +1071,10 @@ var MOCK=(function(){
       });},
     apiListRecords:function(id,f){f=f||{};var u=findUser(id);var rows=records.slice();if(f.date)rows=rows.filter(function(r){return r.date===f.date;});if(f.machineId)rows=rows.filter(function(r){return r.machineId===f.machineId;});if(f.status)rows=rows.filter(function(r){return r.status===f.status;});if(u.role==='operator')rows=rows.filter(function(r){return r.operatorId===u.employeeId;});rows.sort(function(a,b){return a.date<b.date?1:a.date>b.date?-1:0;});return rows.map(listSub);},
     apiGetRecord:function(id,rid){var r=records.find(function(x){return x.recordId===rid;});return r?JSON.parse(JSON.stringify(r)):null;},
+    apiMonthly:function(id,mid,month){findUser(id);var td=today();
+      return records.filter(function(r){return r.machineId===mid&&String(r.date).slice(0,7)===month&&r.date<=td;})
+        .sort(function(a,b){return a.date<b.date?-1:1;})
+        .map(function(r){return {date:r.date,operatorName:r.operatorName,operatorRole:r.operatorRole||'',status:r.status,overall:r.overall,data:r.data};});},
     apiSubmitCheck:function(id,p){var u=findUser(id);var detail=buildDetail(p.values);var overall=detail.some(function(d){return d.result==='fail';})?'NG':'OK';var m=machines.find(function(x){return x.id===p.machineId;})||{id:p.machineId,name:p.machineId};var ex=records.find(function(r){return r.machineId===p.machineId&&r.date===p.date&&(r.status==='Draft'||r.status==='Rejected');});var rid;if(ex){rid=ex.recordId;Object.assign(ex,{status:'Submitted',data:detail,overall:overall,operatorRole:u.role,operatorSig:'',operatorSignedAt:nowStr(),engineerId:'',engineerName:'',engineerSig:'',reviewedAt:'',engineerComment:''});}else{rid=uid('REC');records.push({recordId:rid,date:p.date,shift:'',machineId:m.id,machineName:m.name,operatorId:u.employeeId,operatorName:u.name,operatorRole:u.role,status:'Submitted',data:detail,overall:overall,operatorSig:'',operatorSignedAt:nowStr(),engineerId:'',engineerName:'',engineerSig:'',reviewedAt:'',engineerComment:''});}notify('engineer',overall==='NG'?'alert':'review','รออนุมัติ: '+m.name+' ('+p.date+') ผล '+overall,rid);audit_(u,'CHECK_SUBMIT',rid,m.name+' / '+p.date);return {ok:true,recordId:rid,overall:overall};},
     apiApprove:function(id,rid,sig,comment){var u=findUser(id);var r=records.find(function(x){return x.recordId===rid;});Object.assign(r,{status:'Approved',engineerId:u.employeeId,engineerName:u.name,engineerSig:sig||'',reviewedAt:nowStr(),engineerComment:comment||''});audit_(u,'APPROVE',rid,comment||'');notify(r.operatorId,'approved','อนุมัติแล้ว: '+r.machineName+' ('+r.date+')',rid);return {ok:true};},
     apiReject:function(id,rid,comment){var u=findUser(id);var r=records.find(function(x){return x.recordId===rid;});Object.assign(r,{status:'Rejected',engineerId:u.employeeId,engineerName:u.name,reviewedAt:nowStr(),engineerComment:comment||''});audit_(u,'REJECT',rid,comment||'');notify(r.operatorId,'rejected','ตีกลับ: '+r.machineName+' ('+r.date+') — '+(comment||''),rid);return {ok:true};},
